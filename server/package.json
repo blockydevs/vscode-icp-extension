@@ -1,0 +1,20 @@
+{
+	"name": "vscode-matoko-server",
+	"description": "Example implementation of a language server in node.",
+	"version": "1.0.0",
+	"author": "mmyslblocky",
+	"license": "ISC",
+	"engines": {
+		"node": "*"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/blockydevs/vscode-motoko.git"
+	},
+	"dependencies": {
+		"json-to-ast": "^2.1.0",
+		"vscode-languageserver": "^9.0.1",
+		"vscode-languageserver-textdocument": "^1.0.11"
+	},
+	"scripts": {}
+}
