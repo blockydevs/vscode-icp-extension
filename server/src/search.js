@@ -49,41 +49,87 @@ var GetArrayObject = function getArrayObject(obj, key) {
 	}
 };
 
-var GetFirstPropertiesKey = function getFirstPropertiesKey(obj) {
-	var properties = [];
-	var children = GetArrayObject(obj, "children");
-	children.forEach(function(child) {
-		var key = child["key"];
-		var property = {
-			key: key["value"],
-			startLine: key["loc"]["start"]["line"],
-			startOffset: key["loc"]["start"]["column"],
-			endLine: key["loc"]["end"]["line"],
-			endOffset: key["loc"]["end"]["column"]
-		}
-		properties.push(property);
-	});
-	return properties;
-}
 
-var GetFirstPropertiesValue = function getFirstPropertiesValue(obj, key) {
-	var properties = [];
-	var children = GetArrayObject(obj, "children");
+var RemoveKeys = function removeKeys(obj, keyToDelete) {
+    if (obj && Object.keys(obj).length) {
+        delete obj[keyToDelete];
+
+        Object.keys(obj).forEach(key => {
+            if (obj[key] !== null && typeof obj[key] === 'object' ) {
+                removeKeys(obj[key], keyToDelete);
+            }
+        });
+    }
+};
+
+var GetValuesByInstancePath = function getValuesByInstancePath(astJson, instancePathArray, properties = []) {
+	var children = GetArrayObject(astJson, "children");
 	children.forEach(function(child) {
-		if (child["key"]["value"] == key) {
-			var value = child["value"];
-			var property = {
-				value: value["value"],
-				type: value["type"],
-				startLine: value["loc"]["start"]["line"],
-				startOffset: value["loc"]["start"]["column"],
-				endLine: value["loc"]["end"]["line"],
-				endOffset: value["loc"]["end"]["column"]
+		var firstElementKey = instancePathArray[0];
+		var astKey = child["key"];
+		if (astKey["value"] === firstElementKey) {
+			instancePathArray.shift();
+			if (instancePathArray.length == 0) {
+				var value = child["value"];
+				var property = {
+					startLine: value["loc"]["start"]["line"],
+					startOffset: value["loc"]["start"]["column"],
+					endLine: value["loc"]["end"]["line"],
+					endOffset: value["loc"]["end"]["column"]
+				}
+				properties.push(property);
 			}
-			properties.push(property);
-		};
-	});
+			else {
+				if (child["value"].type === "Array") {
+					firstElementKey = instancePathArray[0];
+					var childToReplace = child["value"]["children"][firstElementKey];
+					if (childToReplace && childToReplace.type === "Object") {
+						instancePathArray.shift();
+						child = childToReplace;
+					}
+					GetValuesByInstancePath(child, instancePathArray, properties);
+				}
+				else {
+					GetValuesByInstancePath(child["value"], instancePathArray, properties);
+				}
+			}
+		}
+	})
 	return properties;
-}
+};
 
-module.exports = {GetObjects, GetObject, GetStringObject, GetNumberObject, GetArrayObject, GetFirstPropertiesKey, GetFirstPropertiesValue};
+var GetValuesFromInputJsonByInstancePath = function getValuesFromInputJsonByInstancePath(astJson, instancePathArray, properties = []) {
+	var children = GetArrayObject(astJson, "children");
+	children.forEach(function(child) {
+		var firstElementKey = instancePathArray[0];
+		var astKey = child["key"];
+		if (astKey["value"] === firstElementKey) {
+			instancePathArray.shift();
+			if (instancePathArray.length == 0) {
+				var value = child["value"];
+				var property = {
+					key: astKey["value"],
+					value: value["value"]
+				}
+				properties.push(property);
+			}
+			else {
+				if (child["value"].type === "Array") {
+					firstElementKey = instancePathArray[0];
+					var childToReplace = child["value"]["children"][firstElementKey];
+					if (childToReplace && childToReplace.type === "Object") {
+						instancePathArray.shift();
+						child = childToReplace;
+					}
+					GetValuesFromInputJsonByInstancePath(child, instancePathArray, properties);
+				}
+				else {
+					GetValuesFromInputJsonByInstancePath(child["value"], instancePathArray, properties);
+				}
+			}
+		}
+	})
+	return properties;
+};
+
+module.exports = {GetObjects, GetObject, GetStringObject, GetNumberObject, GetArrayObject, RemoveKeys, GetValuesByInstancePath, GetValuesFromInputJsonByInstancePath};

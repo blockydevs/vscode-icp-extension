@@ -6,7 +6,6 @@ import {
 	createConnection,
 	TextDocuments,
 	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	DidChangeConfigurationNotification,
@@ -25,14 +24,17 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import {
-	MainProperty,
-	getPropertiesFromDfx
+	getJsonFileWithoutKeyFormat,
+	buildPropsFromJson
 } from './dfxmodel';
 
 import {
-	CustomDiagnostic,
-	validateJsonFirstProperties
+	validate
 } from './validation';
+
+import {
+	autocomplete
+} from './autocomplete';
 
 const parse = require('json-to-ast');
 
@@ -43,7 +45,8 @@ const connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-let mainProperties : MainProperty[] = [];
+let dfxJson : any = {};
+let properties : any = {}
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -51,7 +54,10 @@ let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
 	const capabilities = params.capabilities;
-	mainProperties = getPropertiesFromDfx();
+	dfxJson = getJsonFileWithoutKeyFormat();
+	properties = buildPropsFromJson();
+	console.log(properties);
+
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
 	hasConfigurationCapability = !!(
@@ -71,7 +77,8 @@ connection.onInitialize((params: InitializeParams) => {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			// Tell the client that this server supports code completion.
 			completionProvider: {
-				resolveProvider: true
+				resolveProvider: true,
+				triggerCharacters: ["\""]
 			},
 			diagnosticProvider: {
 				interFileDependencies: false,
@@ -175,8 +182,6 @@ documents.onDidChangeContent(change => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<Diagnostic[]> {
-	// In this simple example we get the settings for every validate run.
-	const settings = await getDocumentSettings(textDocument.uri);
 	const text = textDocument.getText();
 	const diagnostics: Diagnostic[] = [];
 
@@ -185,17 +190,16 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
 			loc: true
 		};
 		const ast = parse(text, settingForParser);
-		const json = JSON.stringify(ast);
-		const jsonParsed = JSON.parse(json);
-		const customDiagnostics = validateJsonFirstProperties(mainProperties, jsonParsed);
-		customDiagnostics.forEach((CustomDiagnostic) => {
+		const astJsonParsed = JSON.parse(JSON.stringify(ast));
+		const customDiagnostics = validate(dfxJson, text, astJsonParsed);
+		customDiagnostics.forEach((customDiagnostic) => {
 			const diagnostic: Diagnostic = {
-				severity: DiagnosticSeverity.Error,
+				severity: customDiagnostic.diagnosticSeverity,
 				range: {
-					start: Position.create(CustomDiagnostic.startLine, CustomDiagnostic.startOffset),
-					end: Position.create(CustomDiagnostic.endLine, CustomDiagnostic.endOffset)
+					start: Position.create(customDiagnostic.startLine, customDiagnostic.startOffset),
+					end: Position.create(customDiagnostic.endLine, customDiagnostic.endOffset)
 				},
-				message: CustomDiagnostic.message,
+				message: customDiagnostic.message ? customDiagnostic.message : 'Unknown error',
 				source: 'dfxmodel'
 			};
 			diagnostics.push(diagnostic);
@@ -203,47 +207,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
 	} else {
 		console.log('Not a JSON string');
 	}
-	
-	// const pattern = /\b[A-Z]{2,}\b/g;
-	// let m: RegExpExecArray | null;
-
-	// let problems = 0;
-	
-	// while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-	// 	problems++;
-	// 	const diagnostic: Diagnostic = {
-	// 		severity: DiagnosticSeverity.Warning,
-	// 		range: {
-	// 			start: Position.create(0, 0),
-	// 			end: Position.create(0, 5)
-	// 		},
-	// 		range: {
-	// 			start: textDocument.positionAt(m.index),
-	// 			end: textDocument.positionAt(m.index + m[0].length)
-	// 		},
-	// 		message: `${m[0]} is all uppercase.`,
-	// 		source: 'ex'
-	// 	};
-		// if (hasDiagnosticRelatedInformationCapability) {
-		// 	diagnostic.relatedInformation = [
-		// 		{
-		// 			location: {
-		// 				uri: textDocument.uri,
-		// 				range: Object.assign({}, diagnostic.range)
-		// 			},
-		// 			message: 'Spelling matters'
-		// 		},
-		// 		{
-		// 			location: {
-		// 				uri: textDocument.uri,
-		// 				range: Object.assign({}, diagnostic.range)
-		// 			},
-		// 			message: 'Particularly for names'
-		// 		}
-		// 	];
-		// }
-	// 	diagnostics.push(diagnostic);
-	// }
 	return diagnostics;
 }
 
@@ -255,44 +218,85 @@ connection.onDidChangeWatchedFiles(_change => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
+		const document = documents.get(_textDocumentPosition.textDocument.uri);
+		if (document) {
+			return resolveAutocomplete(document, _textDocumentPosition.position);
+		}
+		else {
+			return [];
+		}
+	}
+);
+
+function resolveAutocomplete(textDocument: TextDocument, position: Position) : CompletionItem[]{
+	const text = textDocument.getText();
+	if (isJsonString(text)) {
+		const settingForParser = {
+			loc: true
+		};
+		const ast = parse(text, settingForParser);
+		const astJsonParsed = JSON.parse(JSON.stringify(ast));
+		let completionItems = autocomplete(properties, astJsonParsed, position).map((item) => {
+			return {
+				label: item.label,
+				kind: item.kind,
+				data: item.data
+			};
+		});
+		console.log(completionItems);
+		return completionItems;
+	}
+	else {
 		return [
 			{
-				label: 'TypeScript',
+				label: '": "",',
 				kind: CompletionItemKind.Text,
 				data: 1
 			},
 			{
-				label: 'JavaScript',
+				label: '": false,',
 				kind: CompletionItemKind.Text,
 				data: 2
 			},
 			{
-				label: 'ConfigCanistersCanister',
+				label: '": 0,',
 				kind: CompletionItemKind.Text,
 				data: 3
+			},
+			{
+				label: '": null,',
+				kind: CompletionItemKind.Text,
+				data: 4
+			},
+			{
+				label: '": [],',
+				kind: CompletionItemKind.Text,
+				data: 5
+			},
+			{
+				label: '": {},',
+				kind: CompletionItemKind.Text,
+				data: 6
 			}
 		];
 	}
-);
+}
 
 // This handler resolves additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
-		else if (item.data === 3) {
-			item.detail = 'Canister Configuration';
-			item.documentation = 'Configurations for a single canister.';
-		}
+		// if (item.data === 1) {
+		// 	item.detail = 'TypeScript details';
+		// 	item.documentation = 'TypeScript documentation';
+		// } else if (item.data === 2) {
+		// 	item.detail = 'JavaScript details';
+		// 	item.documentation = 'JavaScript documentation';
+		// }
+		// else if (item.data === 3) {
+		// 	item.detail = 'Canister Configuration';
+		// 	item.documentation = 'Configurations for a single canister.';
+		// }
 		return item;
 	}
 );
