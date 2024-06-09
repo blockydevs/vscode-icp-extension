@@ -1,32 +1,7 @@
-import { resolve } from 'path';
 import jsonSchema from './dfx.json';
 import {
 	RemoveKeys
 } from './search.js';
-
-export class MainProperty {
-	name?: string;
-	isObject?: boolean = false;
-}
-
-export class Definition {
-	name?: string;
-	mainPropertyName?: string;
-	properties?: Property[];
-	oneOfProperties?: OneOfProperty[];
-}
-
-export class Property {
-	name?: string;
-	types?: Type[]
-}
-
-export class OneOfProperty {
-	enumName?: string;
-	requiredProperties?: string[];
-	properties?: Property[];
-	type?: Type;
-}
 
 export class Type {
 	name?: string;
@@ -34,11 +9,11 @@ export class Type {
 
 export class Prop {
 	name?: string;
-	types?: Type[] = [];
+	types: Type[] = [];
 	typeForArray?: string;
 	propsForItems: Prop[] = [];
 	enums: string[] = [];
-	requiredProperties?: string[] = [];
+	requiredProperties: string[] = [];
 	properties: Prop[] = [];
 	oneOfProperties: Prop[] = [];
 }
@@ -180,11 +155,11 @@ function buildAllOfProp(dfxJson: any, jsonProp: any, prop: Prop, propName : stri
 		if (jsonProp.allOf[key].hasOwnProperty("$ref")) {
 			let definition = jsonProp.allOf[key].$ref.split("/")[2];
 			let definitionJson = dfxJson.definitions[definition];
+			if (definitionJson.hasOwnProperty("oneOf")) {
+				buildOneOfProp(dfxJson, definitionJson, prop);
+			}
 			if (definitionJson.hasOwnProperty("anyOf")) {
 				buildAnyOfProp(dfxJson, definitionJson, prop);
-				if (definitionJson.hasOwnProperty("oneOf")) {
-					buildOneOfProp(dfxJson, definitionJson, prop);
-				}
 				prop.types?.forEach((type) => types?.push(type));
 				prop.requiredProperties?.forEach((requiredProp) => requiredProperties?.push(requiredProp));
 				prop.enums?.forEach((enumValue) => enums?.push(enumValue));
@@ -294,89 +269,12 @@ function resolveRequiredProperties(json : any, requiredProperties : string[]) {
 	}
 }
 
-export function getMainProperties(): MainProperty[] {
-	let dfxJson = getJsonFileWithoutKeyFormat();
-	let mainProperties: MainProperty[] = [];
-	for (let key in dfxJson.properties) {
-		let mainProperty = new MainProperty();
-		mainProperty.name = key;
-		if (dfxJson.properties[key].hasOwnProperty("type") && Array.isArray(dfxJson.properties[key].type) && dfxJson.properties[key].type.includes("object")) {
-			mainProperty.isObject = true;
-		}
-		mainProperties.push(mainProperty);
-	}
-	return mainProperties;
-}
-
-export function buildDefinitionsFromJson(): Definition[] {
-	let dfxJson = getJsonFileWithoutKeyFormat();
-	let definitions: Definition[] = [];
-	for (let key in dfxJson.definitions) {
-		let definition = new Definition();
-		definition.name = key;
-		definition.properties = [];
-		definition.oneOfProperties = [];
-		populateMainPropertyName(definition, dfxJson, key);
-		for (let key2 in dfxJson.definitions[key].properties) {
-			let property = new Property();
-			property.name = key2;
-			definition.properties.push(property);
-		}
-		for (let key2 in dfxJson.definitions[key].oneOf) {
-			let oneOfProperty = new OneOfProperty();
-			setOneOfProperty(dfxJson.definitions[key].oneOf[key2], oneOfProperty);
-			definition.oneOfProperties.push(oneOfProperty);
-		}
-		definitions.push(definition);
-	}
-	return definitions;
-}
-
-export function findMainPropertyByName(mainProperties: MainProperty[], name: string): MainProperty | null {
+export function findMainPropertyByName(mainProperties: Prop[], name: string): Prop | null {
 	let mainProperty = mainProperties.find(mainProperty => mainProperty.name === name) ?? null;
 	return mainProperty;
 }
 
-export function findDefintionByMainPropertyName(definitions: Definition[], mainPropertyName: string): Definition | null {
-	let definition = definitions.find(definition => definition.mainPropertyName === mainPropertyName) ?? null;
-	return definition;
-}
-
-export function findOneOfPropertyByEnumName(oneOfProperties: OneOfProperty[] | undefined, enumName: string): OneOfProperty | null {
-	let oneOfProperty = oneOfProperties?.find(oneOfProperty => oneOfProperty.enumName === enumName) ?? null;
-	return oneOfProperty;
-}
-
-export function findByDefinitionByName(definitions: Definition[], definitionName: string): Definition | null {
-	let definition = definitions.find(definition => definition.name === definitionName) ?? null;
-	return definition;
-}
-
-function populateMainPropertyName(definition: Definition, dfxJson: any, key: string) {
-	for (let property in dfxJson.properties) {
-		let stringifiedProperty = JSON.stringify(dfxJson.properties[property]);
-		if (stringifiedProperty.includes(key)) {
-			definition.mainPropertyName = property;
-			break;
-		}
-	}
-}
-
-function setOneOfProperty(jsonOneOf: any, oneOfProperty: OneOfProperty) {
-	if (jsonOneOf.hasOwnProperty("properties")) {
-		oneOfProperty.enumName = jsonOneOf.properties.type.enum[0];
-		oneOfProperty.requiredProperties = jsonOneOf.required;
-		oneOfProperty.properties = [];
-		for (let key3 in jsonOneOf.properties) {
-			let property = new Property();
-			property.name = key3;
-			oneOfProperty.properties.push(property);
-		}
-	}
-	else if (jsonOneOf.hasOwnProperty("enum")) {
-		oneOfProperty.enumName = jsonOneOf.enum[0];
-		let type = new Type();
-		type.name = jsonOneOf.type;
-		oneOfProperty.type = type;
-	}
+export function isPropertyContainsType(property: Prop, type: string): boolean {
+	let isType = property.types?.find(t => t.name === type) ?? null;
+	return isType !== null;
 }

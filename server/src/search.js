@@ -1,55 +1,3 @@
-var GetObjects = function getObjects(obj, key) {
-    var objects = [];
-    for (var i in obj) {
-        if (!obj.hasOwnProperty(i)) continue;
-        if (typeof obj[i] == 'object') {
-            objects = objects.concat(getObjects(obj[i], key));
-        } else if (typeof obj[i] == 'array') {
-			for (var j = 0; j < obj[i].length; j++) {
-				objects = objects.concat(getObjects(obj[i][j], key));
-			}
-		}
-		else if (i == key) {
-            objects.push(obj);
-        }
-    }
-    return objects;
-};
-
-var GetObject = function getObject(obj, key) {
-	if (typeof obj[key] == 'object') {
-		return obj[key];
-	}
-	else {
-		return null;
-	}
-};
-
-var GetStringObject = function getStringObject(obj, key) {
-	if (obj.hasOwnProperty(key) && typeof obj[key] == 'string')
-		return obj[key];
-	else {
-		return null;
-	}
-};
-
-var GetNumberObject = function getNumberObject(obj, key) {
-	if (obj.hasOwnProperty(key) && typeof obj[key] == 'number')
-		return obj[key];
-	else {
-		return null;
-	}
-};
-
-var GetArrayObject = function getArrayObject(obj, key) {
-	if (Array.isArray(obj[key]))
-		return obj[key];
-	else {
-		return null;
-	}
-};
-
-
 var RemoveKeys = function removeKeys(obj, keyToDelete) {
     if (obj && Object.keys(obj).length) {
         delete obj[keyToDelete];
@@ -87,7 +35,18 @@ var GetValuesByInstancePath = function getValuesByInstancePath(astJson, instance
 						instancePathArray.shift();
 						child = childToReplace;
 					}
-					GetValuesByInstancePath(child, instancePathArray, properties);
+					if (instancePathArray.length === 0) {
+						var property = {
+							startLine: child["loc"]["start"]["line"],
+							startOffset: child["loc"]["start"]["column"],
+							endLine: child["loc"]["end"]["line"],
+							endOffset: child["loc"]["end"]["column"]
+						}
+						properties.push(property);
+					}
+					else {
+						GetValuesByInstancePath(child, instancePathArray, properties);
+					}
 				}
 				else {
 					GetValuesByInstancePath(child["value"], instancePathArray, properties);
@@ -100,6 +59,9 @@ var GetValuesByInstancePath = function getValuesByInstancePath(astJson, instance
 
 var GetValuesFromInputJsonByInstancePath = function getValuesFromInputJsonByInstancePath(astJson, instancePathArray, properties = []) {
 	var children = GetArrayObject(astJson, "children");
+	if (children === null) {
+		return properties;
+	}
 	children.forEach(function(child) {
 		var firstElementKey = instancePathArray[0];
 		var astKey = child["key"];
@@ -132,4 +94,12 @@ var GetValuesFromInputJsonByInstancePath = function getValuesFromInputJsonByInst
 	return properties;
 };
 
-module.exports = {GetObjects, GetObject, GetStringObject, GetNumberObject, GetArrayObject, RemoveKeys, GetValuesByInstancePath, GetValuesFromInputJsonByInstancePath};
+var GetArrayObject = function getArrayObject(obj, key) {
+	if (obj && Array.isArray(obj[key]))
+		return obj[key];
+	else {
+		return null;
+	}
+};
+
+module.exports = {RemoveKeys, GetValuesByInstancePath, GetValuesFromInputJsonByInstancePath};

@@ -1,13 +1,19 @@
 import {CompletionItemKind, Position} from 'vscode-languageserver/node';
-import {Prop} from './dfxmodel'
+import {
+	Prop,
+	buildPropsFromJson
+} from './dfxmodel'
+
+const props = buildPropsFromJson();
 
 export class CustomCompletionItem {
 	label: string;
 	kind: CompletionItemKind = CompletionItemKind.Text;
 	data: any;
 
-	constructor(label: string, data: any) {
+	constructor(label: string, kind: CompletionItemKind, data: any) {
 		this.label = label;
+		this.kind = kind;
 		this.data = data;
 	}
 }
@@ -36,7 +42,7 @@ class CustomAstRange {
 	}
 }
 
-export function autocomplete(props: Prop[], astJsonParsed: any, position: Position) : CustomCompletionItem[] {
+export function autocomplete(astJsonParsed: any, position: Position) : CustomCompletionItem[] {
 	let customCompletionItems: CustomCompletionItem[] = [];
 	let customPosition = new CustomPosition(position);
 	buildCustomCompletionItems(props, customPosition, astJsonParsed, [], customCompletionItems);
@@ -73,7 +79,6 @@ function buildCustomCompletionItems(props: Prop[], customPosition: CustomPositio
 }
 
 function buildCompletionItemsForKeys(props: Prop[], path: string[], customCompletionItems: CustomCompletionItem[]) {
-	console.log(path);
 	if (path.length > 1) {
 		let currentPathName = path.shift();
 		if (currentPathName && currentPathName !== "") {
@@ -81,7 +86,7 @@ function buildCompletionItemsForKeys(props: Prop[], path: string[], customComple
 			if (prop) {
 				let propPath = path;
 				let oneOfPath = path;
-				buildCompletionItemsForKeys(prop.properties, propPath, customCompletionItems);
+				buildCompletionItemsForKeys(prop.properties, propPath, customCompletionItems, );
 				buildCompletionItemsForKeys(prop.oneOfProperties, oneOfPath, customCompletionItems);
 			}
 		}
@@ -95,13 +100,13 @@ function buildCompletionItemsForKeys(props: Prop[], path: string[], customComple
 		if (prop) {
 			prop.properties?.forEach((property) => {
 				if (property.name) {
-					buildCustomCompletionItem(property.name, customCompletionItems);
+					buildCustomCompletionItem(property.name, customCompletionItems, CompletionItemKind.Property);
 				}
 			});
-			buildCustomCompletionItemForOneOf(prop.oneOfProperties, customCompletionItems);
+			buildCustomCompletionItemForOneOf(prop.oneOfProperties, customCompletionItems, CompletionItemKind.Property);
 			prop.propsForItems?.forEach((propItem) => {
 				if (propItem.name) {
-					buildCustomCompletionItem(propItem.name, customCompletionItems);
+					buildCustomCompletionItem(propItem.name, customCompletionItems, CompletionItemKind.Property);
 				}
 			});
 		}
@@ -109,7 +114,7 @@ function buildCompletionItemsForKeys(props: Prop[], path: string[], customComple
 	else {
 		props.forEach((property) => {
 			if (property.name) {
-				buildCustomCompletionItem(property.name, customCompletionItems);
+				buildCustomCompletionItem(property.name, customCompletionItems, CompletionItemKind.Property);
 			}
 		});
 	}
@@ -140,15 +145,15 @@ function buildCompletionItemsForValues(jsonAst: any, props: Prop[], path: string
 				prop.properties?.forEach((property) => {
 					if (property.name && property.name === itemKey && property.enums.length > 0) {
 						property.enums.forEach((enumValue) => {
-							buildCustomCompletionItem(enumValue, customCompletionItems)
+							buildCustomCompletionItem(enumValue, customCompletionItems, CompletionItemKind.Value)
 						});
 					}
 				});
-				buildCustomCompletionItemForOneOfEnum(itemKey, prop.oneOfProperties, customCompletionItems);
+				buildCustomCompletionItemForOneOfEnum(itemKey, prop.oneOfProperties, customCompletionItems, CompletionItemKind.Value);
 				prop.propsForItems?.forEach((property) => {
 					if (property.name && property.name === itemKey && property.enums.length > 0) {
 						property.enums.forEach((enumValue) => {
-							buildCustomCompletionItem(enumValue, customCompletionItems)
+							buildCustomCompletionItem(enumValue, customCompletionItems, CompletionItemKind.Value)
 						});
 					}
 				});
@@ -161,7 +166,7 @@ function buildCompletionItemsForValues(jsonAst: any, props: Prop[], path: string
 			props?.forEach((property) => {
 				if (property.name && property.name === itemKey && property.enums.length > 0) {
 					property.enums.forEach((enumValue) => {
-						buildCustomCompletionItem(enumValue, customCompletionItems)
+						buildCustomCompletionItem(enumValue, customCompletionItems, CompletionItemKind.Value)
 					});
 				}
 			});
@@ -169,12 +174,7 @@ function buildCompletionItemsForValues(jsonAst: any, props: Prop[], path: string
 	}
 }
 
-function buildCustomCompletionItem(label: string, customCompletionItems: CustomCompletionItem[]) {
-	let customCompletionItem = new CustomCompletionItem(label, customCompletionItems.length + 1);
-	customCompletionItems.push(customCompletionItem);
-}
-
-function buildCustomCompletionItemForOneOf(props: Prop[], customCompletionItems: CustomCompletionItem[]) {
+function buildCustomCompletionItemForOneOf(props: Prop[], customCompletionItems: CustomCompletionItem[], kind: CompletionItemKind) {
 	let oneOfProps: string[] = [];
 	props.forEach((prop) => {
 		if (prop) {
@@ -188,21 +188,26 @@ function buildCustomCompletionItemForOneOf(props: Prop[], customCompletionItems:
 	let oneOfPropsSet = new Set(oneOfProps);
 	oneOfPropsSet.forEach((propName) => {
 		if (propName) {
-			buildCustomCompletionItem(propName, customCompletionItems);
+			buildCustomCompletionItem(propName, customCompletionItems, kind);
 		}
 	});
 }
 
-function buildCustomCompletionItemForOneOfEnum(itemKey: string, props: Prop[], customCompletionItems: CustomCompletionItem[]) {
+function buildCustomCompletionItemForOneOfEnum(itemKey: string, props: Prop[], customCompletionItems: CustomCompletionItem[], kind: CompletionItemKind) {
 	props.forEach((prop) => {
 		if (prop) {
 			prop.properties?.forEach((prop) => {
 				if (prop.name && prop.name === itemKey && prop.enums.length > 0) {
 					prop.enums.forEach((enumValue) => {
-						buildCustomCompletionItem(enumValue, customCompletionItems)
+						buildCustomCompletionItem(enumValue, customCompletionItems, kind)
 					});
 				}
 			});
 		}
 	});
+}
+
+function buildCustomCompletionItem(label: string, customCompletionItems: CustomCompletionItem[], kind: CompletionItemKind) {
+	let customCompletionItem = new CustomCompletionItem(label, kind, customCompletionItems.length + 1);
+	customCompletionItems.push(customCompletionItem);
 }

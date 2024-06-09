@@ -56,7 +56,6 @@ connection.onInitialize((params: InitializeParams) => {
 	const capabilities = params.capabilities;
 	dfxJson = getJsonFileWithoutKeyFormat();
 	properties = buildPropsFromJson();
-	console.log(properties);
 
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
@@ -77,7 +76,7 @@ connection.onInitialize((params: InitializeParams) => {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			// Tell the client that this server supports code completion.
 			completionProvider: {
-				resolveProvider: true,
+				resolveProvider: false,
 				triggerCharacters: ["\""]
 			},
 			diagnosticProvider: {
@@ -200,12 +199,10 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
 					end: Position.create(customDiagnostic.endLine, customDiagnostic.endOffset)
 				},
 				message: customDiagnostic.message ? customDiagnostic.message : 'Unknown error',
-				source: 'dfxmodel'
+				source: 'dfx validator'
 			};
 			diagnostics.push(diagnostic);
 		});
-	} else {
-		console.log('Not a JSON string');
 	}
 	return diagnostics;
 }
@@ -236,45 +233,44 @@ function resolveAutocomplete(textDocument: TextDocument, position: Position) : C
 		};
 		const ast = parse(text, settingForParser);
 		const astJsonParsed = JSON.parse(JSON.stringify(ast));
-		let completionItems = autocomplete(properties, astJsonParsed, position).map((item) => {
+		let completionItems = autocomplete(astJsonParsed, position).map((item) => {
 			return {
 				label: item.label,
 				kind: item.kind,
 				data: item.data
 			};
 		});
-		console.log(completionItems);
 		return completionItems;
 	}
 	else {
 		return [
 			{
-				label: '": "",',
+				label: '": ""',
 				kind: CompletionItemKind.Text,
 				data: 1
 			},
 			{
-				label: '": false,',
+				label: '": false',
 				kind: CompletionItemKind.Text,
 				data: 2
 			},
 			{
-				label: '": 0,',
+				label: '": 0',
 				kind: CompletionItemKind.Text,
 				data: 3
 			},
 			{
-				label: '": null,',
+				label: '": null',
 				kind: CompletionItemKind.Text,
 				data: 4
 			},
 			{
-				label: '": [],',
+				label: '": []',
 				kind: CompletionItemKind.Text,
 				data: 5
 			},
 			{
-				label: '": {},',
+				label: '": {}',
 				kind: CompletionItemKind.Text,
 				data: 6
 			}
@@ -286,17 +282,6 @@ function resolveAutocomplete(textDocument: TextDocument, position: Position) : C
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		// if (item.data === 1) {
-		// 	item.detail = 'TypeScript details';
-		// 	item.documentation = 'TypeScript documentation';
-		// } else if (item.data === 2) {
-		// 	item.detail = 'JavaScript details';
-		// 	item.documentation = 'JavaScript documentation';
-		// }
-		// else if (item.data === 3) {
-		// 	item.detail = 'Canister Configuration';
-		// 	item.documentation = 'Configurations for a single canister.';
-		// }
 		return item;
 	}
 );

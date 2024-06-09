@@ -4,19 +4,15 @@ import {
 } from './search.js';
 import Ajv from 'ajv';
 import {
-	buildDefinitionsFromJson,
 	findMainPropertyByName,
-	findByDefinitionByName,
-	findDefintionByMainPropertyName,
-	findOneOfPropertyByEnumName,
-	getMainProperties,
-	Definition
+	buildPropsFromJson,
+	Prop,
+	isPropertyContainsType,
 } from './dfxmodel';
 import {DiagnosticSeverity} from 'vscode-languageserver/node';
 
 const ajv = new Ajv({strict: false, allErrors: true, inlineRefs: false});
-const definitions = buildDefinitionsFromJson();
-const mainProperties = getMainProperties();
+const props = buildPropsFromJson();
 
 export class CustomDiagnostic {
 	message?: string;
@@ -49,6 +45,16 @@ export class AjvError {
 	}
 }
 
+class OneOfEnum {
+	key: string;
+	requiredProperties: string[] = []
+	value: string;
+	constructor(key: string, value: string) {
+		this.key = key;
+		this.value = value;
+	}
+}
+
 export function validate(jsonSchema: any, jsonInput: any, astJsonParsed: any) : CustomDiagnostic[] {
     let input = JSON.parse(jsonInput);
     let schema = JSON.parse(JSON.stringify(jsonSchema));
@@ -57,15 +63,14 @@ export function validate(jsonSchema: any, jsonInput: any, astJsonParsed: any) : 
 	let ajvErrors: AjvError[] = [];
 
     if (!isValid) {
-
-        ajv.errors?.forEach((error) => {
+        ajv.errors?.filter((error) => error.keyword !== "anyOf" && error.message !== "must be null").forEach((error) => {
 			let ajvError = new AjvError(error.instancePath, error.schemaPath, error.keyword)
 			if (ajvError.keyword === "enum") {
-				let errorMessage = error.message;
+				let errorMessage = error.message + " ";
 				error.params.allowedValues.forEach((value: string) => {
-					errorMessage = errorMessage + " " + value;
+					errorMessage = errorMessage + value + ", ";
 				});
-				ajvError.message = errorMessage;
+				ajvError.message = errorMessage.slice(0, errorMessage.lastIndexOf(','));
 			}
 			else {
 				ajvError.message = error.message;
@@ -73,7 +78,7 @@ export function validate(jsonSchema: any, jsonInput: any, astJsonParsed: any) : 
 			ajvError.params = error.params;
 			ajvErrors.push(ajvError);
 		});
-    }
+    };
 	let ajvErrorsMap = putAjvErrorsToMap(ajvErrors);
 	let diagnostics: CustomDiagnostic[] = [];
 	ajvErrorsMap.forEach((ajvErrors, key) => {
@@ -87,10 +92,10 @@ function putAjvErrorsToMap(ajvErrors: AjvError[]) : Map<string, AjvError[]> {
 	ajvErrors.forEach((ajvError) => {
 		let instancePathArray = ajvError.instancePath.split('/');
 		instancePathArray.shift();
-		let mainProperty = findMainPropertyByName(mainProperties, instancePathArray[0]);
+		let mainProperty = findMainPropertyByName(props, instancePathArray[0]);
 		let key : string | null = null;
 		if (mainProperty !== null) {
-			if (mainProperty.isObject && instancePathArray.length > 1) {
+			if (isPropertyContainsType(mainProperty, "object") && instancePathArray.length > 1) {
 				key = mainProperty.name + "." + instancePathArray[1];
 			}
 			else {
@@ -110,93 +115,15 @@ function putAjvErrorsToMap(ajvErrors: AjvError[]) : Map<string, AjvError[]> {
 }
 
 function mapFromAjvErrorToCustomDiagnostic(diagnostics: CustomDiagnostic[], ajvErrors: AjvError[], astJsonParsed: any) : CustomDiagnostic[] {
-	if (!checkIfAjvErrorsHasOneOfProblems(diagnostics, ajvErrors, astJsonParsed)) {
+	let maxDepth = Math.max(...ajvErrors.map(o => o.depth ?? 0));
+	let ajvErrorOneOf = ajvErrors.find((ajvError) => ajvError.keyword === 'oneOf' && ajvError.depth && (ajvError.depth === maxDepth || ajvError.depth === maxDepth - 1));
+	if (ajvErrorOneOf) {
+		resolveOneOfProblemsToCustomDiagnostic(diagnostics, ajvErrorOneOf, astJsonParsed);
+	}
+	else {
 		resolveCustomDiagnosticFromAjvError(diagnostics, ajvErrors, astJsonParsed);
 	}
 	return diagnostics;
-}
-
-function checkIfAjvErrorsHasOneOfProblems(diagnostics: CustomDiagnostic[], ajvErrors: AjvError[], astJsonParsed: any) : boolean {
-	let ajvOneOfError = ajvErrors.find((ajvError) => ajvError.keyword === 'oneOf');
-	if (ajvOneOfError) {
-		let enumProperty = getEnumValueByAjvErrors(ajvOneOfError.depth, ajvErrors, astJsonParsed);
-		let enumKey = enumProperty.key ?? null;
-		let enumValue = enumProperty.value ?? null;
-		let ajvErrorsWithoutOneOf = ajvErrors.filter((ajvError) => ajvError.keyword !== "oneOf" && (ajvError.keyword !== "enum" && ajvError.keyword !== "required" && ajvOneOfError.depth && ajvError.depth === ajvOneOfError.depth + 1));
-		if (ajvErrorsWithoutOneOf.length > 0) {
-			resolveCustomDiagnosticFromAjvError(diagnostics, ajvErrorsWithoutOneOf, astJsonParsed)
-		}
-		else {
-			let definition : Definition | null = null;
-			let instancePathArray = ajvOneOfError.instancePath.split('/');
-			if (ajvOneOfError.schemaPath.includes("definitions")) {
-				let definitionName = ajvOneOfError.schemaPath.split("/")[2];
-				definition = findByDefinitionByName(definitions, definitionName) ?? null;
-			}
-			else {
-				let mainPropertyName = instancePathArray[1];
-				definition = findDefintionByMainPropertyName(definitions, mainPropertyName) ?? null;
-			}
-			if (definition && enumKey && enumValue && typeof enumValue === "string") {
-				let oneOfProperty = findOneOfPropertyByEnumName(definition.oneOfProperties, enumValue);
-				if (oneOfProperty && oneOfProperty.requiredProperties) {
-					let message = "required fields are: ";
-					oneOfProperty.requiredProperties.forEach((requiredProperty) => {
-						message = message + requiredProperty + " ";
-					});
-					instancePathArray.shift();
-					let astValueList = GetValuesByInstancePath(astJsonParsed, instancePathArray);
-					if (astValueList.length > 0) {
-						let astValue = astValueList[0];
-						let customDiagnostic = new CustomDiagnostic(astValue["startLine"], astValue["startOffset"], astValue["endLine"], astValue["endOffset"]);
-						customDiagnostic.message = message;
-						customDiagnostic.diagnosticSeverity = DiagnosticSeverity.Error;
-						diagnostics.push(customDiagnostic);
-					}
-				}
-				else {
-					let message = "property " + enumKey + " must have one of value: "; 
-					definition.oneOfProperties?.forEach((oneOfProperty) => {
-						message = message + oneOfProperty.enumName + " ";
-					});
-					instancePathArray.shift();
-					let astValueList = GetValuesByInstancePath(astJsonParsed, instancePathArray);
-					if (astValueList.length > 0) {
-						let astValue = astValueList[0];
-						let customDiagnostic = new CustomDiagnostic(astValue["startLine"], astValue["startOffset"], astValue["endLine"], astValue["endOffset"]);
-						customDiagnostic.message = message;
-						customDiagnostic.diagnosticSeverity = DiagnosticSeverity.Error;
-						diagnostics.push(customDiagnostic);
-					}
-				}
-			}
-			else {
-				return false;
-			}
-		}
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-function getEnumValueByAjvErrors(depth: number | undefined, ajvErrors: AjvError[], astJsonParsed: any) : any | null {
-	let ajvError = ajvErrors.find((ajvError) => ajvError.keyword === "enum" && depth && (depth === ajvError.depth || depth + 1 === ajvError.depth));
-	if (ajvError) {
-		let instancePathArray = ajvError?.instancePath.split('/');
-		instancePathArray.shift();
-		let properties = GetValuesFromInputJsonByInstancePath(astJsonParsed, instancePathArray);
-		if (properties.length > 0) {
-			return properties[0];
-		}
-		else {
-			return null
-		}
-	}
-	else {
-		return null;
-	}
 }
 
 function resolveCustomDiagnosticFromAjvError(diagnostics: CustomDiagnostic[], ajvErrors: AjvError[], astJsonParsed: any) {
@@ -211,8 +138,146 @@ function resolveCustomDiagnosticFromAjvError(diagnostics: CustomDiagnostic[], aj
 				let customDiagnostic = new CustomDiagnostic(astValue["startLine"], astValue["startOffset"], astValue["endLine"], astValue["endOffset"]);
 				customDiagnostic.message = ajvError.message;
 				customDiagnostic.diagnosticSeverity = DiagnosticSeverity.Error;
-				diagnostics.push(customDiagnostic);
+				pushDiagnosticsIfItIsNotDuplicated(diagnostics, customDiagnostic);
 			}
 		}
 	});
+}
+
+function resolveOneOfProblemsToCustomDiagnostic(diagnostics: CustomDiagnostic[], ajvErrorOneOf: AjvError, astJsonParsed: any) {
+	let oneOfEnums = resolvePropWithOneOfToOneOneEnum(ajvErrorOneOf?.instancePath.split('/') ?? [], props);
+	if (oneOfEnums.length > 0) {
+		let oneOfEnumKey = oneOfEnums[0].key;
+		let enumProperty = getEnumValueByAjvErrors(ajvErrorOneOf?.instancePath.split('/') ?? [], oneOfEnumKey, astJsonParsed);
+		let enumKey = enumProperty?.key ?? null;
+		let enumValue = enumProperty?.value ?? "";
+		if (enumKey !== null  && oneOfEnumKey === enumKey && enumValue !== null && typeof enumValue === "string") {
+			let oneOfEnum = oneOfEnums.find((oneOfEnum) => oneOfEnum.value === enumValue);
+			if (oneOfEnum) {
+				let message = "required fields are: "; 
+				oneOfEnum.requiredProperties.forEach((requiredProperty) => {
+					message = message + requiredProperty + ", ";
+				});
+				message = message.slice(0, message.lastIndexOf(','));
+				buildAndPushCustomDiagnostic(diagnostics, astJsonParsed, ajvErrorOneOf?.instancePath.split('/') ?? [], message);
+			}
+			else {
+				let message = "property " + enumKey + " must have one of the values: "; 
+				oneOfEnums.forEach((oneOfEnum) => {
+					message = message + oneOfEnum.value + ", ";
+				});
+				message = message.slice(0, message.lastIndexOf(','));
+				buildAndPushCustomDiagnostic(diagnostics, astJsonParsed, ajvErrorOneOf?.instancePath.split('/') ?? [], message);
+			}
+
+		}
+		else if (enumKey !== null && oneOfEnumKey === enumKey) {
+			let message = "property " + enumKey + " and must have one of the values: "; 
+			oneOfEnums.forEach((oneOfEnum) => {
+				message = message + oneOfEnum.value + ", ";
+			});
+			message = message.slice(0, message.lastIndexOf(','));
+			buildAndPushCustomDiagnostic(diagnostics, astJsonParsed, ajvErrorOneOf?.instancePath.split('/') ?? [], message);
+		}
+		else {
+			let message = "must be an object with property \"" + oneOfEnums[0].key + "\" with one of the values: "; 
+			oneOfEnums.forEach((oneOfEnum) => {
+				message = message + oneOfEnum.value + ", ";
+			});
+			message = message.slice(0, message.lastIndexOf(','));
+			buildAndPushCustomDiagnostic(diagnostics, astJsonParsed, ajvErrorOneOf?.instancePath.split('/') ?? [], message);
+		}
+	}
+}
+
+function resolvePropWithOneOfToOneOneEnum(instancePathArray: string[], props: Prop[]) : OneOfEnum[] {
+	instancePathArray.shift();
+	let propertiesForSearch = props;
+	let searchedProperty = null;
+	while (instancePathArray.length > 0) {
+		let prop = propertiesForSearch.find((prop) => prop.name === instancePathArray[0] || prop.name === "additionalProperties");
+		if (prop) {
+			instancePathArray.shift();
+			if (isPropertyContainsType(prop, "array")) {
+				propertiesForSearch = prop.propsForItems;
+				searchedProperty = prop;
+				instancePathArray.shift();
+			}
+			else {
+				propertiesForSearch = prop.properties;
+				searchedProperty = prop;
+			}
+		}
+		else {
+			searchedProperty = null;
+			break;
+		}
+	}
+	if (searchedProperty && searchedProperty.oneOfProperties.length > 0) {
+		return getEnumsOneOfProp(searchedProperty);
+	}
+	else {
+		return [];
+	}
+}
+
+function getEnumsOneOfProp(oneOfProperty: Prop) : OneOfEnum[] {
+	let oneOfEnums: OneOfEnum[] = [];
+	oneOfProperty.oneOfProperties.forEach((o) => {
+		if (isPropertyContainsType(o, "object")) {
+			o.properties.map((prop) => {
+				if (prop.enums.length > 0 && prop.name) {
+					let oneOfEnum = new OneOfEnum(prop.name, prop.enums[0]);
+					oneOfEnum.requiredProperties = o.requiredProperties;
+					return oneOfEnum;
+				}
+			}).forEach((oneOfEnum) => {
+				if (oneOfEnum) {
+					oneOfEnums.push(oneOfEnum);
+				}
+			});
+		}
+		else if (o.enums.length > 0 && oneOfProperty.name) {
+			let oneOfEnum = new OneOfEnum(oneOfProperty.name, o.enums[0]);
+			oneOfEnum.requiredProperties = o.requiredProperties;
+			oneOfEnums.push(oneOfEnum);
+		}
+	});
+	return oneOfEnums;
+}
+
+function buildAndPushCustomDiagnostic(diagnostics: CustomDiagnostic[], astJsonParsed: any, instancePathArray: string[], message: string) {
+	if (instancePathArray.length > 0) {
+		instancePathArray.shift();
+		let astValueList = GetValuesByInstancePath(astJsonParsed, instancePathArray ?? []);
+			if (astValueList.length > 0) {
+				let astValue = astValueList[0];
+				let customDiagnostic = new CustomDiagnostic(astValue["startLine"], astValue["startOffset"], astValue["endLine"], astValue["endOffset"]);
+				customDiagnostic.message = message;
+				customDiagnostic.diagnosticSeverity = DiagnosticSeverity.Error;
+				pushDiagnosticsIfItIsNotDuplicated(diagnostics, customDiagnostic);
+			}
+	}
+}
+
+
+
+function pushDiagnosticsIfItIsNotDuplicated(diagnostics: CustomDiagnostic[], diagnostic: CustomDiagnostic) {
+	if (!diagnostics.find((d) => d.message === diagnostic.message && d.startLine === diagnostic.startLine && d.startOffset === diagnostic.startOffset && d.endLine === diagnostic.endLine && d.endOffset === diagnostic.endOffset)) {
+		diagnostics.push(diagnostic);
+	}
+}
+
+function getEnumValueByAjvErrors(instancePathArray: string[], enumKey: string, astJsonParsed: any) : any | null {
+	if (!(instancePathArray[instancePathArray.length - 1] === enumKey)) {
+		instancePathArray.push(enumKey);
+	}
+	instancePathArray.shift();
+	let properties = GetValuesFromInputJsonByInstancePath(astJsonParsed, instancePathArray);
+	if (properties.length > 0) {
+		return properties[0];
+	}
+	else {
+		return null
+	}
 }
