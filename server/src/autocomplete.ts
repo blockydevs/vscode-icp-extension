@@ -67,10 +67,10 @@ function buildCustomCompletionItems(props: Prop[], customPosition: CustomPositio
 				}
 			}
 			else if (customPosition.line === customAstRange.startLine && customPosition.line === customAstRange.endLine) {
-				if (astJsonParsed.hasOwnProperty("key") && astJsonParsed.key.loc.start.column <= customPosition.character && astJsonParsed.key.loc.end.column >= customPosition.character) {
+				if (astJsonParsed.hasOwnProperty("key") && astJsonParsed.key.loc && astJsonParsed.key.loc.start.column <= customPosition.character && astJsonParsed.key.loc.end.column >= customPosition.character) {
 					buildCompletionItemsForKeys(props, path, customCompletionItems);
 				}
-				else if (astJsonParsed.hasOwnProperty("value") && astJsonParsed.value.loc.start.column <= customPosition.character && astJsonParsed.value.loc.end.column >= customPosition.character) {
+				else if (astJsonParsed.hasOwnProperty("value") && astJsonParsed.value.loc && astJsonParsed.value.loc.start.column <= customPosition.character && astJsonParsed.value.loc.end.column >= customPosition.character) {
 					buildCompletionItemsForValues(astJsonParsed, props, path, customCompletionItems);
 				}
 			}

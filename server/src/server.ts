@@ -35,12 +35,15 @@ import {
 import {
 	autocomplete
 } from './autocomplete';
+import {
+	WSUpdates
+} from './workspaceChanges'
 
 const parse = require('json-to-ast');
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
+export const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -217,7 +220,7 @@ connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 		const document = documents.get(_textDocumentPosition.textDocument.uri);
 		if (document) {
-			return resolveAutocomplete(document, _textDocumentPosition.position);
+			return resolveAutocomplete(document, _textDocumentPosition, _textDocumentPosition.position);
 		}
 		else {
 			return [];
@@ -225,7 +228,7 @@ connection.onCompletion(
 	}
 );
 
-function resolveAutocomplete(textDocument: TextDocument, position: Position) : CompletionItem[]{
+function resolveAutocomplete(textDocument: TextDocument, _textDocumentPosition: TextDocumentPositionParams, position: Position) : CompletionItem[]{
 	const text = textDocument.getText();
 	if (isJsonString(text)) {
 		const settingForParser = {
@@ -243,38 +246,13 @@ function resolveAutocomplete(textDocument: TextDocument, position: Position) : C
 		return completionItems;
 	}
 	else {
-		return [
-			{
-				label: '": ""',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: '": false',
-				kind: CompletionItemKind.Text,
-				data: 2
-			},
-			{
-				label: '": 0',
-				kind: CompletionItemKind.Text,
-				data: 3
-			},
-			{
-				label: '": null',
-				kind: CompletionItemKind.Text,
-				data: 4
-			},
-			{
-				label: '": []',
-				kind: CompletionItemKind.Text,
-				data: 5
-			},
-			{
-				label: '": {}',
-				kind: CompletionItemKind.Text,
-				data: 6
-			}
-		];
+		const wsu = new WSUpdates();
+		let lineText = wsu.getLine(textDocument, position.line).trim();
+		if (lineText === "\"\"") {
+			wsu.replaceText(_textDocumentPosition.textDocument.uri, "\"\": \"\"\n", position.line, position.character-1, position.line + 1, 0);
+			wsu.applyChanges();
+		}
+		return [];
 	}
 }
 
