@@ -156,6 +156,9 @@ function buildCompletionItemsForValues(jsonAst: any, props: Prop[], path: string
 							buildCustomCompletionItem(enumValue, customCompletionItems, CompletionItemKind.Value)
 						});
 					}
+					else if (property.name && property.name === itemKey && property.oneOfProperties.length > 0) {
+						buildCustomCompletionItemForOneOfEnum(itemKey, property.oneOfProperties, customCompletionItems, CompletionItemKind.Value);
+					}
 				});
 			}
 		}
@@ -196,13 +199,20 @@ function buildCustomCompletionItemForOneOf(props: Prop[], customCompletionItems:
 function buildCustomCompletionItemForOneOfEnum(itemKey: string, props: Prop[], customCompletionItems: CustomCompletionItem[], kind: CompletionItemKind) {
 	props.forEach((prop) => {
 		if (prop) {
-			prop.properties?.forEach((prop) => {
-				if (prop.name && prop.name === itemKey && prop.enums.length > 0) {
-					prop.enums.forEach((enumValue) => {
-						buildCustomCompletionItem(enumValue, customCompletionItems, kind)
-					});
-				}
-			});
+			if (prop.enums.length > 0) {
+				prop.enums.forEach((enumValue) => {
+					buildCustomCompletionItem(enumValue, customCompletionItems, kind)
+				});
+			}
+			else if (prop.properties.length > 0) {
+				prop.properties?.forEach((prop) => {
+					if (prop.name && prop.name === itemKey && prop.enums.length > 0) {
+						prop.enums.forEach((enumValue) => {
+							buildCustomCompletionItem(enumValue, customCompletionItems, kind)
+						});
+					}
+				});
+			}
 		}
 	});
 }
