@@ -231,24 +231,29 @@ connection.onCompletion(
 function resolveAutocomplete(textDocument: TextDocument, _textDocumentPosition: TextDocumentPositionParams, position: Position) : CompletionItem[]{
 	const text = textDocument.getText();
 	if (isJsonString(text)) {
-		const settingForParser = {
-			loc: true
-		};
-		const ast = parse(text, settingForParser);
-		const astJsonParsed = JSON.parse(JSON.stringify(ast));
-		let completionItems = autocomplete(astJsonParsed, position).map((item) => {
-			return {
-				label: item.label,
-				kind: item.kind,
-				data: item.data
+		if (text.replace(/[\n\r\t\s]+/g, '') === "\{\}") {
+			return getCompletionItemsForEmptyFile();
+		}
+		else {
+			const settingForParser = {
+				loc: true
 			};
-		});
-		return completionItems;
+			const ast = parse(text, settingForParser);
+			const astJsonParsed = JSON.parse(JSON.stringify(ast));
+			let completionItems = autocomplete(astJsonParsed, position).map((item) => {
+				return {
+					label: item.label,
+					kind: item.kind,
+					data: item.data
+				};
+			});
+			return completionItems;
+		}
 	}
 	else {
 		const wsu = new WSUpdates();
 		let lineText = wsu.getLine(textDocument, position.line).trim();
-		if (lineText === "\"\"") {
+		if (lineText.replace(/[\n\r\t\s]+/g, '') === "\"\"") {
 			wsu.replaceText(_textDocumentPosition.textDocument.uri, "\"\": \"\"\n", position.line, position.character-1, position.line + 1, 0);
 			wsu.applyChanges();
 		}
@@ -278,4 +283,44 @@ function isJsonString(text: string) {
         return false;
     }
     return true;
+}
+
+function getCompletionItemsForEmptyFile() : CompletionItem[] {
+	return [
+		{
+			label: '"dfx": ""',
+			kind: CompletionItemKind.Property,
+			data: 1
+		},
+		{
+			label: '"canisters": {\n}',
+			kind: CompletionItemKind.Property,
+			data: 2
+		},
+		{
+			label: '"defaults": {\n}',
+			kind: CompletionItemKind.Property,
+			data: 3
+		},
+		{
+			label: '"networks": {\n}',
+			kind: CompletionItemKind.Property,
+			data: 4
+		},
+		{
+			label: '"output_env_file": ""',
+			kind: CompletionItemKind.Property,
+			data: 5
+		},
+		{
+			label: '"profile": "Profile"',
+			kind: CompletionItemKind.Property,
+			data: 6
+		},
+		{
+			label: '"version": 0',
+			kind: CompletionItemKind.Property,
+			data: 7
+		}
+	];
 }

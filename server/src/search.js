@@ -12,6 +12,9 @@ var RemoveKeys = function removeKeys(obj, keyToDelete) {
 
 var GetValuesByInstancePath = function getValuesByInstancePath(astJson, instancePathArray, properties = []) {
 	var children = GetArrayObject(astJson, "children");
+	if (children === null) {
+		return properties;
+	}
 	children.forEach(function(child) {
 		var firstElementKey = instancePathArray[0];
 		var astKey = child["key"];
@@ -31,7 +34,7 @@ var GetValuesByInstancePath = function getValuesByInstancePath(astJson, instance
 				if (child["value"].type === "Array") {
 					firstElementKey = instancePathArray[0];
 					var childToReplace = child["value"]["children"][firstElementKey];
-					if (childToReplace && childToReplace.type === "Object") {
+					if (childToReplace && (childToReplace.type === "Object" || childToReplace.type === "Literal")) {
 						instancePathArray.shift();
 						child = childToReplace;
 					}
@@ -79,7 +82,7 @@ var GetValuesFromInputJsonByInstancePath = function getValuesFromInputJsonByInst
 				if (child["value"].type === "Array") {
 					firstElementKey = instancePathArray[0];
 					var childToReplace = child["value"]["children"][firstElementKey];
-					if (childToReplace && childToReplace.type === "Object") {
+					if (childToReplace && (childToReplace.type === "Object" || childToReplace.type === "Literal")) {
 						instancePathArray.shift();
 						child = childToReplace;
 					}

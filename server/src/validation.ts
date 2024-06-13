@@ -72,6 +72,19 @@ export function validate(jsonSchema: any, jsonInput: any, astJsonParsed: any) : 
 				});
 				ajvError.message = errorMessage.slice(0, errorMessage.lastIndexOf(','));
 			}
+			else if (ajvError.keyword === "type") {
+				let errorMessage = "Incompatible types.\nRequired: ";
+				if (error.params && error.params.type && Array.isArray(error.params.type)) {
+					error.params.type.forEach((type: string) => {
+						errorMessage = errorMessage + type + ", ";
+					});
+					errorMessage = errorMessage.slice(0, errorMessage.lastIndexOf(','));
+				}
+				else if (error.params && error.params.type) {
+					errorMessage = errorMessage + error.params.type;
+				}
+				ajvError.message = errorMessage;
+			}
 			else {
 				ajvError.message = error.message;
 			}
@@ -117,7 +130,11 @@ function putAjvErrorsToMap(ajvErrors: AjvError[]) : Map<string, AjvError[]> {
 function mapFromAjvErrorToCustomDiagnostic(diagnostics: CustomDiagnostic[], ajvErrors: AjvError[], astJsonParsed: any) : CustomDiagnostic[] {
 	let maxDepth = Math.max(...ajvErrors.map(o => o.depth ?? 0));
 	let ajvErrorOneOf = ajvErrors.find((ajvError) => ajvError.keyword === 'oneOf' && ajvError.depth && (ajvError.depth === maxDepth || ajvError.depth === maxDepth - 1));
-	if (ajvErrorOneOf) {
+	let ajvErrorTypes = ajvErrors.filter((ajvError) => ajvError.keyword === 'type' && ajvError.depth && (ajvError.depth === maxDepth));
+	if (ajvErrorTypes.length > 0) {
+		resolveCustomDiagnosticFromAjvError(diagnostics, ajvErrorTypes, astJsonParsed);
+	}
+	else if (ajvErrorOneOf) {
 		resolveOneOfProblemsToCustomDiagnostic(diagnostics, ajvErrorOneOf, astJsonParsed);
 	}
 	else {
