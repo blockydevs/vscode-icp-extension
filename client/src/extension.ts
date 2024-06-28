@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { JsonTreeItem, JsonTreeProvider } from './jsonTreeProvider';
+import { exec } from 'child_process';
 
 let client: LanguageClient;
 
@@ -112,13 +113,15 @@ export function deactivate(): Thenable<void> | undefined {
 
 function runCommand(command: string, infoMessage: string) {
     vscode.window.showInformationMessage(infoMessage);
-    
-    let terminal = vscode.window.activeTerminal;
-    if (!terminal) {
-        terminal = vscode.window.createTerminal(`Run Command`);
-    }
-    
-    terminal.show();
-    terminal.sendText(command);
+    exec(command, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
+        if (error) {
+            vscode.window.showErrorMessage(`Error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            vscode.window.showErrorMessage(`Stderr: ${stderr}`);
+            return;
+        }
+        vscode.window.showInformationMessage(`Output: ${stdout}`);
+    });
 }
-
