@@ -145,15 +145,17 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
             if (stderr) {
-                outputChannel.appendLine(`Stderr: ${stderr}`);
+                outputChannel.appendLine(stderr.toString());
                 return;
             }
-            outputChannel.appendLine(`Output: ${stdout}`);
+            outputChannel.appendLine(stdout.toString());
         });
     }
 
     function startReplica() {
         outputChannel.show(true);
+        outputChannel.appendLine(`Starting replica...`);
+        
         const command = dfxPath ? `wsl ${dfxPath}dfx start` : `dfx start`;
         const replicaProcess = exec(command, { cwd: vscode.workspace.rootPath });
 
@@ -162,14 +164,14 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         replicaProcess.stderr.on('data', (data) => {
-            outputChannel.appendLine(`Stderr: ${data.toString()}`);
+            outputChannel.appendLine(data.toString());
         });
 
         replicaProcess.on('close', (code) => {
             outputChannel.appendLine(`Replica process exited with code ${code}`);
         });
 
-        outputChannel.appendLine(`Starting replica...`);
+        
     }
 }
 
