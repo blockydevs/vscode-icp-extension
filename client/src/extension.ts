@@ -153,6 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     function startReplica() {
+        outputChannel.show(true);
         const command = dfxPath ? `wsl ${dfxPath}dfx start` : `dfx start`;
         const replicaProcess = exec(command, { cwd: vscode.workspace.rootPath });
 
