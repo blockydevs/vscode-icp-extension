@@ -10,6 +10,7 @@ import { JsonTreeItem, JsonTreeProvider } from './jsonTreeProvider';
 import { exec } from 'child_process';
 
 let client: LanguageClient;
+let dfxPath: string;
 
 export function activate(context: vscode.ExtensionContext) {
     // The server is implemented in node
@@ -45,13 +46,16 @@ export function activate(context: vscode.ExtensionContext) {
     const rootPath = vscode.workspace.rootPath;
     const treeDataProvider = new JsonTreeProvider(rootPath);
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
+
+    const outputChannel = vscode.window.createOutputChannel("Motoko");
+    context.subscriptions.push(outputChannel);
+
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
         runCommand(`dfx deploy ${item.label.split(':')[0]} --network playground`, `Deploying canister: ${item.label}`);
     });
     vscode.commands.registerCommand('jsonTree.startReplica', () => {
-        runCommand('dfx start --background', 'Starting replica...');
-        vscode.commands.executeCommand('vscode.open', vscode.Uri.parse('http://localhost:44749/_/dashboard'));
+        startReplica();
     });
 
     vscode.commands.registerCommand('jsonTree.deployCanisters', () => {
@@ -102,6 +106,70 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.commands.executeCommand('jsonTree.deployCanister', item);
         }
     });
+
+    vscode.commands.registerCommand('jsonTree.showOptions', async () => {
+        const options = [
+            { label: 'Refresh', command: 'jsonTree.refreshEntry' },
+            { label: 'Configure WSL DFX Path', command: 'jsonTree.configureDfxPath' },
+        ];
+        const selection = await vscode.window.showQuickPick(options, {
+            placeHolder: 'Select an option'
+        });
+
+        if (selection) {
+            vscode.commands.executeCommand(selection.command);
+        }
+    });
+
+    vscode.commands.registerCommand('jsonTree.configureDfxPath', async () => {
+        let newPath = await vscode.window.showInputBox({
+            prompt: 'Enter the WSL path to dfx',
+            placeHolder: '/home/user/.local/share/dfx/bin/'
+        });
+
+        if (newPath) {
+            dfxPath = newPath;
+            vscode.window.showInformationMessage(`WSL DFX path set to: ${dfxPath}`);
+        }
+    });
+
+    function runCommand(command: string, infoMessage: string) {
+        outputChannel.show(true);
+        outputChannel.appendLine(infoMessage);
+
+        const fullCommand = dfxPath ? `wsl ${dfxPath}${command}` : `${command}`;
+    
+        exec(fullCommand, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
+            if (error) {
+                outputChannel.appendLine(`Error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                outputChannel.appendLine(`Stderr: ${stderr}`);
+                return;
+            }
+            outputChannel.appendLine(`Output: ${stdout}`);
+        });
+    }
+
+    function startReplica() {
+        const command = dfxPath ? `wsl ${dfxPath}dfx start` : `dfx start`;
+        const replicaProcess = exec(command, { cwd: vscode.workspace.rootPath });
+
+        replicaProcess.stdout.on('data', (data) => {
+            outputChannel.appendLine(data.toString());
+        });
+
+        replicaProcess.stderr.on('data', (data) => {
+            outputChannel.appendLine(`Stderr: ${data.toString()}`);
+        });
+
+        replicaProcess.on('close', (code) => {
+            outputChannel.appendLine(`Replica process exited with code ${code}`);
+        });
+
+        outputChannel.appendLine(`Starting replica...`);
+    }
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -109,19 +177,4 @@ export function deactivate(): Thenable<void> | undefined {
         return undefined;
     }
     return client.stop();
-}
-
-function runCommand(command: string, infoMessage: string) {
-    vscode.window.showInformationMessage(infoMessage);
-    exec(command, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
-        if (error) {
-            vscode.window.showErrorMessage(`Error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            vscode.window.showErrorMessage(`Stderr: ${stderr}`);
-            return;
-        }
-        vscode.window.showInformationMessage(`Output: ${stdout}`);
-    });
 }

@@ -35,7 +35,9 @@
     "onCommand:jsonTree.deployCanisters",
     "onCommand:jsonTree.openJson",
     "onCommand:jsonTree.showCanisterGroupActions",
-    "onCommand:jsonTree.showCanisterActions"
+    "onCommand:jsonTree.showCanisterActions",
+    "onCommand:jsonTree.showOptions",
+    "onCommand:jsonTree.configureDfxPath"
   ],
   "main": "./client/out/extension",
   "contributes": {
@@ -66,7 +68,7 @@
       "activitybar": [
         {
           "id": "jsonTreeContainer",
-          "title": "JSON Tree",
+          "title": "Motoko",
           "icon": "client/src/media/dep.svg"
         }
       ]
@@ -75,14 +77,14 @@
       "jsonTreeContainer": [
         {
           "id": "jsonTree",
-          "name": "JSON Tree"
+          "name": "Motoko"
         }
       ]
     },
     "commands": [
       {
         "command": "jsonTree.refreshEntry",
-        "title": "Refresh JSON Tree"
+        "title": "Refresh"
       },
       {
         "command": "jsonTree.deployCanister",
@@ -107,12 +109,20 @@
       {
         "command": "jsonTree.showCanisterActions",
         "title": "Show Canister Actions"
+      },
+      {
+        "command": "jsonTree.showOptions",
+        "title": "options"
+      },
+      {
+        "command": "jsonTree.configureDfxPath",
+        "title": "Configure WSL DFX Path"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "jsonTree.refreshEntry",
+          "command": "jsonTree.showOptions",
           "when": "view == jsonTree",
           "group": "navigation"
         }
