@@ -11,6 +11,7 @@ import { exec } from 'child_process';
 
 let client: LanguageClient;
 let dfxPath: string;
+let canisterLogs: { [key: string]: string } = {};
 
 export function activate(context: vscode.ExtensionContext) {
     // The server is implemented in node
@@ -53,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.createProject', () => createProject());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
-        runCommand(`dfx deploy ${item.label.split(':')[0]} --network playground`, `Deploying canister: ${item.label}`);
+        runCommand(`dfx deploy ${item.label.split(':')[0]} --network playground`, `Deploying canister: ${item.label}`, item.label);
     });
     vscode.commands.registerCommand('jsonTree.startReplica', () => {
         startReplica();
@@ -98,13 +99,15 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand('jsonTree.showCanisterActions', async (item: JsonTreeItem) => {
-        const options = ['Deploy Canister'];
+        const options = ['Deploy Canister', 'View Logs'];
         const selection = await vscode.window.showQuickPick(options, {
             placeHolder: 'Select an action'
         });
 
         if (selection === 'Deploy Canister') {
             vscode.commands.executeCommand('jsonTree.deployCanister', item);
+        } else if (selection === 'View Logs') {
+            vscode.commands.executeCommand('jsonTree.viewLogs', item);
         }
     });
 
@@ -135,22 +138,35 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    function runCommand(command: string, infoMessage: string) {
+    vscode.commands.registerCommand('jsonTree.viewLogs', (item: JsonTreeItem) => {
+        viewLogs(item);
+    });
+
+    function runCommand(command: string, infoMessage: string, canisterName?: string) {
         outputChannel.show(true);
         outputChannel.appendLine(infoMessage);
 
         const fullCommand = dfxPath ? `wsl ${dfxPath}${command}` : `${command}`;
-    
+
         exec(fullCommand, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
             if (error) {
                 outputChannel.appendLine(`Error: ${error.message}`);
+                if (canisterName) {
+                    canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + `Error: ${error.message}\n`;
+                }
                 return;
             }
             if (stderr) {
                 outputChannel.appendLine(stderr.toString());
+                if (canisterName) {
+                    canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + stderr.toString() + '\n';
+                }
                 return;
             }
             outputChannel.appendLine(stdout.toString());
+            if (canisterName) {
+                canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + stdout.toString() + '\n';
+            }
         });
     }
 
@@ -206,6 +222,71 @@ export function activate(context: vscode.ExtensionContext) {
         } else {
             vscode.window.showErrorMessage('Project name and location are required.');
         }
+    }
+
+    function getWebviewContent(canisterName: string): string {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logs for ${canisterName}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: transparent; color: white; }
+        #logs { white-space: pre-wrap; background: transparent; padding: 10px; border-radius: 5px; }
+        a { color: #4f8aff; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Logs for ${canisterName}</h1>
+    <div id="logs">Loading logs...</div>
+    <script>
+        const vscode = acquireVsCodeApi();
+        window.onload = () => {
+            vscode.postMessage({ command: 'fetchLogs' });
+        };
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.command === 'updateLogs') {
+                document.getElementById('logs').innerHTML = message.logs.replace(/(https?:\\/\\/\\S+)/g, '<a href="$1" target="_blank">$1</a>');
+            }
+        });
+        setInterval(() => {
+            vscode.postMessage({ command: 'fetchLogs' });
+        }, 1000); // Fetch logs every second
+    </script>
+</body>
+</html>`;
+    }
+
+    function viewLogs(item: JsonTreeItem) {
+        const panel = vscode.window.createWebviewPanel(
+            'canisterLogs',
+            `Logs for ${item.label}`,
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
+        );
+
+        panel.webview.html = getWebviewContent(item.label);
+
+        panel.webview.onDidReceiveMessage(
+            async message => {
+                switch (message.command) {
+                    case 'fetchLogs':
+                        const logs = canisterLogs[item.label] || 'No logs available';
+                        panel.webview.postMessage({ command: 'updateLogs', logs });
+                        break;
+                }
+            },
+            undefined,
+            context.subscriptions
+        );
+
+        // Initial fetch
+        const initialLogs = canisterLogs[item.label] || 'No logs available';
+        panel.webview.postMessage({ command: 'updateLogs', initialLogs });
     }
 }
 
