@@ -87,6 +87,10 @@
         "title": "Refresh"
       },
       {
+        "command": "jsonTree.createProject",
+        "title": "Create New Project"
+      },
+      {
         "command": "jsonTree.deployCanister",
         "title": "Deploy Canister"
       },

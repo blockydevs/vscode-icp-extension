@@ -51,6 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(outputChannel);
 
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
+    vscode.commands.registerCommand('jsonTree.createProject', () => createProject());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
         runCommand(`dfx deploy ${item.label.split(':')[0]} --network playground`, `Deploying canister: ${item.label}`);
     });
@@ -110,6 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('jsonTree.showOptions', async () => {
         const options = [
             { label: 'Refresh', command: 'jsonTree.refreshEntry' },
+            { label: 'Create New Project', command: 'jsonTree.createProject' },
             { label: 'Configure WSL DFX Path', command: 'jsonTree.configureDfxPath' },
         ];
         const selection = await vscode.window.showQuickPick(options, {
@@ -170,8 +172,40 @@ export function activate(context: vscode.ExtensionContext) {
         replicaProcess.on('close', (code) => {
             outputChannel.appendLine(`Replica process exited with code ${code}`);
         });
+    }
 
-        
+    async function createProject() {
+        const projectName = await vscode.window.showInputBox({
+            prompt: 'Enter the name of the new project',
+            placeHolder: 'my_new_project'
+        });
+
+        const projectLocation = await vscode.window.showInputBox({
+            prompt: 'Enter the location where the project should be created',
+            value: vscode.workspace.rootPath || '/path/to/project/location'
+        });
+
+        if (projectName && projectLocation) {
+            outputChannel.show(true);
+            outputChannel.appendLine(`Creating new project: ${projectName} at ${projectLocation}`);
+            
+            const command = dfxPath ? `wsl ${dfxPath}dfx new ${projectName}` : `dfx new ${projectName}`;
+            const process = exec(command, { cwd: projectLocation });
+
+            process.stdout.on('data', (data) => {
+                outputChannel.appendLine(data.toString());
+            });
+
+            process.stderr.on('data', (data) => {
+                outputChannel.appendLine(data.toString());
+            });
+
+            process.on('close', (code) => {
+                outputChannel.appendLine(`Creating new project process exited with code ${code}`);
+            });
+        } else {
+            vscode.window.showErrorMessage('Project name and location are required.');
+        }
     }
 }
 
