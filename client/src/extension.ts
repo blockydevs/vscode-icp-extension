@@ -9,8 +9,11 @@ import { JsonTreeProvider } from './jsonTreeProvider';
 import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
 import { setDfxPath, setCanisterLogs } from './modules/globalVariables';
+import { CanisterFileProvider } from './modules/canisterFileProvider';
 
 let client: LanguageClient;
+let dfxPath: string;
+const WEBVIEW_PORT = 4943;
 
 export function activate(context: vscode.ExtensionContext) {
     client = configureLanguageClient(context);
@@ -19,6 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const rootPath = vscode.workspace.rootPath;
     const treeDataProvider = new JsonTreeProvider(rootPath);
+    const canistersFileProvider = new CanisterFileProvider(rootPath, WEBVIEW_PORT);
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
 
     const outputChannel = vscode.window.createOutputChannel("Motoko");
@@ -28,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     setDfxPath('');
     setCanisterLogs({});
 
-    activateCommands(context, treeDataProvider, outputChannel);
+    activateCommands(context, treeDataProvider, canistersFileProvider, outputChannel);
 }
 
 export function deactivate(): Thenable<void> | undefined {

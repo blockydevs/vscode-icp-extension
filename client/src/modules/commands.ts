@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { JsonTreeProvider, JsonTreeItem } from '../jsonTreeProvider';
 import { runCommand, createProject, viewLogs } from './projectManager';
-import { getDfxPath, setDfxPath } from './globalVariables';
+import { getDfxPath, setDfxPath, getCandidUICanisterId, setCandidUICanisterId } from './globalVariables';
 import { startReplica } from './replicaManager';
+import { CanisterFileProvider } from './canisterFileProvider';
 
-export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, outputChannel: vscode.OutputChannel) {
+export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, canistersFileProvider: CanisterFileProvider, outputChannel: vscode.OutputChannel) {
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.createProject', () => createProject(outputChannel));
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
@@ -22,6 +23,11 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     vscode.commands.registerCommand('jsonTree.showOptions', showOptions);
     vscode.commands.registerCommand('jsonTree.configureDfxPath', configureDfxPath);
     vscode.commands.registerCommand('jsonTree.viewLogs', viewLogs);
+    vscode.commands.registerCommand('dfx.openCandidUI', (item: JsonTreeItem) => {
+        canistersFileProvider.refresh;
+        canistersFileProvider.createWebViewPanel(item);
+    });
+    vscode.commands.registerCommand('dfx.configureCandidUICanisterId', configureCandidUICanisterId);
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {
@@ -58,7 +64,7 @@ async function showCanisterGroupActions() {
 }
 
 async function showCanisterActions(item: JsonTreeItem) {
-    const options = ['Deploy Canister', 'View Logs'];
+    const options = ['Deploy Canister', 'View Logs', 'Open Candid UI'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
@@ -67,6 +73,8 @@ async function showCanisterActions(item: JsonTreeItem) {
         vscode.commands.executeCommand('jsonTree.deployCanister', item);
     } else if (selection === 'View Logs') {
         vscode.commands.executeCommand('jsonTree.viewLogs', item);
+    } else if (selection === 'Open Candid UI') {
+        vscode.commands.executeCommand('dfx.openCandidUI', item);
     }
 }
 
@@ -75,6 +83,7 @@ async function showOptions() {
         { label: 'Refresh', command: 'jsonTree.refreshEntry' },
         { label: 'Create New Project', command: 'jsonTree.createProject' },
         { label: 'Configure WSL DFX Path', command: 'jsonTree.configureDfxPath' },
+        { label: 'Configure Candid UI Canister ID', command: 'dfx.configureCandidUICanisterId' },
     ];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an option'
@@ -94,5 +103,17 @@ async function configureDfxPath() {
     if (newPath) {
         setDfxPath(newPath);
         vscode.window.showInformationMessage(`WSL DFX path set to: ${getDfxPath()}`);
+    }
+}
+
+async function configureCandidUICanisterId() {
+    let canisterId = await vscode.window.showInputBox({
+        prompt: 'Enter the Candid UI Canister ID that you wish to display',
+        placeHolder: 'bw4dl-smaaa-aaaaa-qaacq-cai'
+    });
+
+    if (canisterId) {
+        setCandidUICanisterId(canisterId);
+        vscode.window.showInformationMessage(`Candid UI Canister ID path set to: ${getCandidUICanisterId()}`);
     }
 }

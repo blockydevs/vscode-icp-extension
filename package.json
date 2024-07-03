@@ -95,6 +95,10 @@
         "title": "Deploy Canister"
       },
       {
+        "command": "dfx.candid",
+        "title": "Open Candid UI"
+      },
+      {
         "command": "jsonTree.startReplica",
         "title": "Start Replica"
       },
@@ -121,6 +125,14 @@
       {
         "command": "jsonTree.configureDfxPath",
         "title": "Configure WSL DFX Path"
+      },
+      {
+        "command": "dfx.openCandidUI",
+        "title": "Open Candid UI"
+      },
+      {
+        "command": "dfx.configureCandidUICanisterId",
+        "title": "Configure Candid UI Canister ID"
       }
     ],
     "menus": {
