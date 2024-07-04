@@ -3,6 +3,11 @@ import { exec } from 'child_process';
 import { JsonTreeItem } from './jsonTreeProvider';
 import { getDfxPath, getCanisterLogs } from './globalVariables';
 
+function stripAnsiCodes(input: string): string {
+    const ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+    return input.replace(ansiRegex, '');
+}
+
 export function runCommand(command: string, infoMessage: string, canisterName: string | undefined, outputChannel: vscode.OutputChannel) {
     const canisterLogs = getCanisterLogs();
     outputChannel.show(true);
@@ -12,22 +17,25 @@ export function runCommand(command: string, infoMessage: string, canisterName: s
 
     exec(fullCommand, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
         if (error) {
-            outputChannel.appendLine(`Error: ${error.message}`);
+            const cleanError = stripAnsiCodes(error.message);
+            outputChannel.appendLine(`Error: ${cleanError}`);
             if (canisterName) {
-                canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + `Error: ${error.message}\n`;
+                canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + `Error: ${cleanError}\n`;
             }
             return;
         }
         if (stderr) {
-            outputChannel.appendLine(stderr.toString());
+            const cleanStderr = stripAnsiCodes(stderr.toString());
+            outputChannel.appendLine(cleanStderr);
             if (canisterName) {
-                canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + stderr.toString() + '\n';
+                canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + cleanStderr + '\n';
             }
             return;
         }
-        outputChannel.appendLine(stdout.toString());
+        const cleanStdout = stripAnsiCodes(stdout.toString());
+        outputChannel.appendLine(cleanStdout);
         if (canisterName) {
-            canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + stdout.toString() + '\n';
+            canisterLogs[canisterName] = (canisterLogs[canisterName] || '') + cleanStdout + '\n';
         }
     });
 }
