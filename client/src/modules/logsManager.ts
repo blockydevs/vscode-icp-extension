@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import { JsonTreeItem } from '../jsonTreeProvider';
+import { JsonTreeItem } from './jsonTreeProvider';
 import { getDfxPath, getCanisterLogs } from './globalVariables';
 
 export function runCommand(command: string, infoMessage: string, canisterName: string | undefined, outputChannel: vscode.OutputChannel) {

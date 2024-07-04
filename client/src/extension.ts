@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
-import { JsonTreeProvider } from './jsonTreeProvider';
+import { JsonTreeProvider } from './modules/jsonTreeProvider';
 import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
 import { setDfxPath, setCanisterLogs } from './modules/globalVariables';

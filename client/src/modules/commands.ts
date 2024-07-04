@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { JsonTreeProvider, JsonTreeItem } from '../jsonTreeProvider';
+import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
 import { runCommand, viewLogs } from './logsManager';
 import { getDfxPath, setDfxPath } from './globalVariables';
 import { startReplica } from './replicaManager';
