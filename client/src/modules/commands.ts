@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
 import { JsonTreeProvider, JsonTreeItem } from '../jsonTreeProvider';
-import { runCommand, createProject, viewLogs } from './projectManager';
+import { runCommand, viewLogs } from './logsManager';
 import { getDfxPath, setDfxPath } from './globalVariables';
 import { startReplica } from './replicaManager';
 
 export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, outputChannel: vscode.OutputChannel) {
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
-    vscode.commands.registerCommand('jsonTree.createProject', () => createProject(outputChannel));
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
         runCommand(`dfx deploy ${item.label.split(':')[0]} --network playground`, `Deploying canister: ${item.label}`, item.label, outputChannel);
     });
@@ -73,7 +72,6 @@ async function showCanisterActions(item: JsonTreeItem) {
 async function showOptions() {
     const options = [
         { label: 'Refresh', command: 'jsonTree.refreshEntry' },
-        { label: 'Create New Project', command: 'jsonTree.createProject' },
         { label: 'Configure WSL DFX Path', command: 'jsonTree.configureDfxPath' },
     ];
     const selection = await vscode.window.showQuickPick(options, {

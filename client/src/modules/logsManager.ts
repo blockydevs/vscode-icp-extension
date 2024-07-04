@@ -3,44 +3,6 @@ import { exec } from 'child_process';
 import { JsonTreeItem } from '../jsonTreeProvider';
 import { getDfxPath, getCanisterLogs } from './globalVariables';
 
-export async function createProject(outputChannel: vscode.OutputChannel) {
-    const projectName = await vscode.window.showInputBox({
-        prompt: 'Enter the name of the new project',
-        placeHolder: 'my_new_project'
-    });
-
-    const projectLocation = await vscode.window.showInputBox({
-        prompt: 'Enter the location where the project should be created',
-        value: vscode.workspace.rootPath || '/path/to/project/location'
-    });
-
-    if (projectName && projectLocation) {
-        outputChannel.show(true);
-        outputChannel.appendLine(`Creating new project: ${projectName} at ${projectLocation}`);
-        outputChannel.appendLine(`Using DFX path: ${getDfxPath()}`);
-        
-        const command = getDfxPath() ? `wsl ${getDfxPath()}dfx new ${projectName}` : `dfx new ${projectName}`;
-        const process = exec(command, { cwd: projectLocation });
-
-        process.stdout.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-
-        process.stderr.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-
-        process.on('close', (code) => {
-            outputChannel.appendLine(`Creating new project process exited with code ${code}`);
-            if (code !== 0) {
-                vscode.window.showErrorMessage(`Failed to create project. Exit code: ${code}`);
-            }
-        });
-    } else {
-        vscode.window.showErrorMessage('Project name and location are required.');
-    }
-}
-
 export function runCommand(command: string, infoMessage: string, canisterName: string | undefined, outputChannel: vscode.OutputChannel) {
     const canisterLogs = getCanisterLogs();
     outputChannel.show(true);
