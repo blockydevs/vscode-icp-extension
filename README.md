@@ -10,14 +10,13 @@ These features are powered by a schema located in `/server/src/dfx.json`.
 
 - **Canisters View**: A visual representation of the `dfx.json` file in a tree format, allowing easy navigation and interaction with canisters. The extension is activated from the side panel of Visual Studio Code.
 - **Canister Actions**: For each canister, you can perform various actions such as deploying the canister. You can also perform actions on all canisters collectively.
-- **Options Section**: Provides additional options for managing the `dfx.json` file and the related canisters.
 
 ### Key Files and Directories
 
 - **client/src/extension.ts**: Responsible for starting the client and registering commands.
 - **server/src/server.ts**: Entry point for the Language Server, where the server is configured and started.
 - **package.json**: Contains metadata about the extension, including dependencies, activation events, and contributions to VS Code.
-- **modules/**: Contains helper modules for commands, global variables, project management, and replica management.
+- **modules/**: Contains helper modules for commands, global variables, dfx json provider, logs and replica management.
 
 ## How to Run
 
@@ -37,22 +36,35 @@ To get started with the extension, follow these steps:
    - In the new instance of VS Code that opens (known as the Extension Development Host), open a document with a `.json` extension.
    - You should see validation errors and autocomplete suggestions specific to `dfx.json` files.
 
-## Example Use Cases
+## Pack to one file and Run Local
+To use this VS Code extension locally without publishing it to the Marketplace, follow these steps:
 
+1. **Install `vsce` (Visual Studio Code Extension Manager) if you haven't already:**
+
+   ```sh
+   npm install -g vsce
+   ```
+2. Package the extension:
+
+   Navigate to your extension project directory and run:
+
+   ```sh
+   vsce package
+   ```
+
+3. Install the .vsix package in Visual Studio Code:
+
+- Open Visual Studio Code.
+- Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window or by pressing Ctrl+Shift+X.
+- Click on the three dots in the top right corner of the Extensions view.
+- Select Install from VSIX....
+- Browse to the .vsix file generated in step 2 and select it.
+- 
+## Example Use Cases
+  
 The extension comes with several built-in commands to manage and interact with `dfx.json` and related development tasks. These commands are executed through the context menu in the Canisters View.
 
-`options`:
-1. **Refresh the JSON Tree**:
-   - **Use Case**: When you have made changes to the `dfx.json` file outside of VS Code or through other processes and want to ensure the tree view is up-to-date.
-   - **Action**: Click on "options" on the tree view and select "Refresh" to update the view.
-
-2. **Create a New Project**:
-   - **Use Case**: When you want to start a new project with a fresh `dfx.json` configuration.
-   - **Action**: Select "Create New Project" from the options menu and follow the prompts to define the project name and location.
-
-3. **Configure DFX Path**:
-   - **Use Case**: When you need to set or change the path to the `dfx` executable, especially useful for WSL (Windows Subsystem for Linux) users.
-   - **Action**: Select "Configure WSL DFX Path" from the options menu and enter the desired path.
+**Refresh**: When you have made changes to the `dfx.json` file outside of VS Code or through other processes and want to ensure the tree view is up-to-date.
 
 `canisters> Show Actions`:
 
