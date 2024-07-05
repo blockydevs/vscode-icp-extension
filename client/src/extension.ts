@@ -3,59 +3,34 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
-
-import {
-	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-	TransportKind
-} from 'vscode-languageclient/node';
+import * as vscode from 'vscode';
+import { LanguageClient } from 'vscode-languageclient/node';
+import { JsonTreeProvider } from './modules/jsonTreeProvider';
+import { activateCommands } from './modules/commands';
+import { configureLanguageClient } from './modules/languageClient';
+import { setCanisterLogs } from './modules/globalVariables';
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
-	// The server is implemented in node
-	const serverModule = context.asAbsolutePath(
-		path.join('server', 'out', 'server.js')
-	);
+export function activate(context: vscode.ExtensionContext) {
+    client = configureLanguageClient(context);
+    // Start the client. This will also launch the server
+    client.start();
 
-	// If the extension is launched in debug mode then the debug server options are used
-	// Otherwise the run options are used
-	const serverOptions: ServerOptions = {
-		run: { module: serverModule, transport: TransportKind.ipc },
-		debug: {
-			module: serverModule,
-			transport: TransportKind.ipc,
-		}
-	};
+    const rootPath = vscode.workspace.rootPath;
+    const treeDataProvider = new JsonTreeProvider(rootPath);
+    vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
 
-	// Options to control the language client
-	const clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', pattern: "**/dfx.json", language: 'json'}],
-		synchronize: {
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-		}
-	};
+    const outputChannel = vscode.window.createOutputChannel("Motoko");
+    context.subscriptions.push(outputChannel);
 
-	// Create the language client and start the client.
-	client = new LanguageClient(
-		'languageServerExample',
-		'Language Server Example',
-		serverOptions,
-		clientOptions
-	);
-
-	// Start the client. This will also launch the server
-	client.start();
+    setCanisterLogs({});
+    activateCommands(context, treeDataProvider, outputChannel);
 }
 
 export function deactivate(): Thenable<void> | undefined {
-	if (!client) {
-		return undefined;
-	}
-	return client.stop();
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
 }
