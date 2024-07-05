@@ -36,8 +36,7 @@
     "onCommand:jsonTree.openJson",
     "onCommand:jsonTree.showCanisterGroupActions",
     "onCommand:jsonTree.showCanisterActions",
-    "onCommand:jsonTree.showOptions",
-    "onCommand:jsonTree.configureDfxPath"
+    "onCommand:jsonTree.showOptions"
   ],
   "main": "./client/out/extension",
   "contributes": {
@@ -113,10 +112,6 @@
       {
         "command": "jsonTree.showOptions",
         "title": "options"
-      },
-      {
-        "command": "jsonTree.configureDfxPath",
-        "title": "Configure WSL DFX Path"
       }
     ],
     "menus": {

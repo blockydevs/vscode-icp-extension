@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { JsonTreeItem } from './jsonTreeProvider';
-import { getDfxPath, getCanisterLogs } from './globalVariables';
+import { getCanisterLogs } from './globalVariables';
 
 function stripAnsiCodes(input: string): string {
     const ansiRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
@@ -13,9 +13,7 @@ export function runCommand(command: string, infoMessage: string, canisterName: s
     outputChannel.show(true);
     outputChannel.appendLine(infoMessage);
 
-    const fullCommand = getDfxPath() ? `wsl ${getDfxPath()}${command}` : `${command}`;
-
-    exec(fullCommand, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
+    exec(command, { cwd: vscode.workspace.rootPath }, (error, stdout, stderr) => {
         if (error) {
             const cleanError = stripAnsiCodes(error.message);
             outputChannel.appendLine(`Error: ${cleanError}`);

@@ -8,7 +8,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { JsonTreeProvider } from './modules/jsonTreeProvider';
 import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
-import { setDfxPath, setCanisterLogs } from './modules/globalVariables';
+import { setCanisterLogs } from './modules/globalVariables';
 
 let client: LanguageClient;
 
@@ -24,10 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
     const outputChannel = vscode.window.createOutputChannel("Motoko");
     context.subscriptions.push(outputChannel);
 
-    // Set initial global variables
-    setDfxPath('');
     setCanisterLogs({});
-
     activateCommands(context, treeDataProvider, outputChannel);
 }
 

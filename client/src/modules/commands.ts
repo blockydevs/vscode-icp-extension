@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
 import { runCommand, viewLogs } from './logsManager';
-import { getDfxPath, setDfxPath } from './globalVariables';
 import { startReplica } from './replicaManager';
 
 export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, outputChannel: vscode.OutputChannel) {
@@ -19,7 +18,6 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     vscode.commands.registerCommand('jsonTree.showCanisterGroupActions', showCanisterGroupActions);
     vscode.commands.registerCommand('jsonTree.showCanisterActions', showCanisterActions);
     vscode.commands.registerCommand('jsonTree.showOptions', showOptions);
-    vscode.commands.registerCommand('jsonTree.configureDfxPath', configureDfxPath);
     vscode.commands.registerCommand('jsonTree.viewLogs', viewLogs);
 }
 
@@ -72,7 +70,6 @@ async function showCanisterActions(item: JsonTreeItem) {
 async function showOptions() {
     const options = [
         { label: 'Refresh', command: 'jsonTree.refreshEntry' },
-        { label: 'Configure WSL DFX Path', command: 'jsonTree.configureDfxPath' },
     ];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an option'
@@ -80,17 +77,5 @@ async function showOptions() {
 
     if (selection) {
         vscode.commands.executeCommand(selection.command);
-    }
-}
-
-async function configureDfxPath() {
-    let newPath = await vscode.window.showInputBox({
-        prompt: 'Enter the WSL path to dfx',
-        placeHolder: '/home/user/.local/share/dfx/bin/'
-    });
-
-    if (newPath) {
-        setDfxPath(newPath);
-        vscode.window.showInformationMessage(`WSL DFX path set to: ${getDfxPath()}`);
     }
 }
