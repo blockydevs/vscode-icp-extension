@@ -17,7 +17,6 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     vscode.commands.registerCommand('jsonTree.openJson', openJson);
     vscode.commands.registerCommand('jsonTree.showCanisterGroupActions', showCanisterGroupActions);
     vscode.commands.registerCommand('jsonTree.showCanisterActions', showCanisterActions);
-    vscode.commands.registerCommand('jsonTree.showOptions', showOptions);
     vscode.commands.registerCommand('jsonTree.viewLogs', viewLogs);
 }
 
@@ -64,18 +63,5 @@ async function showCanisterActions(item: JsonTreeItem) {
         vscode.commands.executeCommand('jsonTree.deployCanister', item);
     } else if (selection === 'View Logs') {
         vscode.commands.executeCommand('jsonTree.viewLogs', item);
-    }
-}
-
-async function showOptions() {
-    const options = [
-        { label: 'Refresh', command: 'jsonTree.refreshEntry' },
-    ];
-    const selection = await vscode.window.showQuickPick(options, {
-        placeHolder: 'Select an option'
-    });
-
-    if (selection) {
-        vscode.commands.executeCommand(selection.command);
     }
 }

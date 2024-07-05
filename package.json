@@ -35,8 +35,7 @@
     "onCommand:jsonTree.deployCanisters",
     "onCommand:jsonTree.openJson",
     "onCommand:jsonTree.showCanisterGroupActions",
-    "onCommand:jsonTree.showCanisterActions",
-    "onCommand:jsonTree.showOptions"
+    "onCommand:jsonTree.showCanisterActions"
   ],
   "main": "./client/out/extension",
   "contributes": {
@@ -108,16 +107,12 @@
       {
         "command": "jsonTree.showCanisterActions",
         "title": "Show Canister Actions"
-      },
-      {
-        "command": "jsonTree.showOptions",
-        "title": "options"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "jsonTree.showOptions",
+          "command": "jsonTree.refreshEntry",
           "when": "view == jsonTree",
           "group": "navigation"
         }
