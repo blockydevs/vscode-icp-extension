@@ -85,3 +85,32 @@ The extension comes with several built-in commands to manage and interact with `
 2. **View Logs**:
    - **Use Case**: View logs for specific canister.
    - **Action**: Click on a canister and select "View Logs"
+  
+## Using `dfx` with WSL in Visual Studio Code
+
+To use `dfx` with Windows Subsystem for Linux (WSL) in Visual Studio Code, follow these steps:
+
+1. **Install and Set Up WSL:**
+
+   Ensure you have WSL installed and set up on your system. Follow the [official Microsoft guide](https://docs.microsoft.com/en-us/windows/wsl/install) if you haven't done this yet.
+
+2. **Install `dfx` in WSL:**
+
+   Open your WSL terminal and install `dfx` according to the [Internet Computer documentation](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/).
+
+3. **Open Visual Studio Code:**
+
+   Open Visual Studio Code on your Windows machine.
+
+4. **Connect to WSL:**
+
+   - Click on the green remote connection icon in the bottom left corner of the VS Code window.
+   - Select `Connect to WSL` from the dropdown menu.
+   - Choose your WSL distribution if prompted.
+
+5. **Access `dfx` commands in VS Code:**
+
+   Once connected to WSL, you will be able to run `dfx` commands directly from the integrated terminal in VS Code.
+
+   - Open a new terminal in VS Code by clicking on `Terminal` in the top menu and selecting `New Terminal`.
+   - Check `dfx --version` to verify the installation.
