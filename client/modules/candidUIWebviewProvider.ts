@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { JsonTreeItem } from '../jsonTreeProvider';
 import { getCandidUICanisterId } from './globalVariables';
 
-export class CanisterFileProvider {
+export class CandidUIWebviewProvider {
 	private jsonData: any;
     private jsonFilePath: string;
     private webViewPort: number;
@@ -62,10 +62,6 @@ export class CanisterFileProvider {
                     </body>
                     </html>`
     }
-
-    // private getCandidUICanisterId() : any {
-    //     return this.jsonData['__Candid_UI']["local"];
-    // }
 
     private getCanisterId(key: string) : any {
         return this.jsonData[key]["local"];

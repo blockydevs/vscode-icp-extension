@@ -3,9 +3,10 @@ import { JsonTreeProvider, JsonTreeItem } from '../jsonTreeProvider';
 import { runCommand, createProject, viewLogs } from './projectManager';
 import { getDfxPath, setDfxPath, getCandidUICanisterId, setCandidUICanisterId } from './globalVariables';
 import { startReplica } from './replicaManager';
-import { CanisterFileProvider } from './canisterFileProvider';
+import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
+import { ReactPanel } from './ReactPanel';
 
-export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, canistersFileProvider: CanisterFileProvider, outputChannel: vscode.OutputChannel) {
+export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, canistersFileProvider: CandidUIWebviewProvider, outputChannel: vscode.OutputChannel) {
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.createProject', () => createProject(outputChannel));
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
@@ -27,7 +28,11 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
         canistersFileProvider.refresh;
         canistersFileProvider.createWebViewPanel(item);
     });
-    vscode.commands.registerCommand('dfx.configureCandidUICanisterId', configureCandidUICanisterId);
+    vscode.commands.registerCommand('dfx.setCandidUICanisterId', configureCandidUICanisterId);
+    context.subscriptions.push(vscode.commands.registerCommand('react-webview.start', () => {
+		ReactPanel.createOrShow(context.extensionPath, context.extensionUri);
+	}));
+	vscode.commands.executeCommand('react-webview.start');
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {
@@ -83,7 +88,7 @@ async function showOptions() {
         { label: 'Refresh', command: 'jsonTree.refreshEntry' },
         { label: 'Create New Project', command: 'jsonTree.createProject' },
         { label: 'Configure WSL DFX Path', command: 'jsonTree.configureDfxPath' },
-        { label: 'Configure Candid UI Canister ID', command: 'dfx.configureCandidUICanisterId' },
+        { label: 'Set Candid UI Canister ID', command: 'dfx.setCandidUICanisterId' },
     ];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an option'

@@ -22,13 +22,17 @@ export async function createProject(outputChannel: vscode.OutputChannel) {
         const command = getDfxPath() ? `wsl ${getDfxPath()}dfx new ${projectName}` : `dfx new ${projectName}`;
         const process = exec(command, { cwd: projectLocation });
 
-        process.stdout.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
+        if (process.stdout) {
+            process.stdout.on('data', (data) => {
+                outputChannel.appendLine(data.toString());
+            });
+        }
 
-        process.stderr.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
+        if (process.stderr) {
+            process.stderr.on('data', (data) => {
+                outputChannel.appendLine(data.toString());
+            });
+        }
 
         process.on('close', (code) => {
             outputChannel.appendLine(`Creating new project process exited with code ${code}`);

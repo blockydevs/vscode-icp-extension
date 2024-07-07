@@ -11,9 +11,13 @@
   },
   "dependencies": {
     "ajv": "^8.14.0",
+    "jsonc-parser": "^0.4.2",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.11",
-    "jsonc-parser": "^0.4.2"
+    "vscode-languageclient": "^9.0.1",
+		"json-to-ast": "^2.1.0"
   },
   "keywords": [
     "vscode",
@@ -37,9 +41,10 @@
     "onCommand:jsonTree.showCanisterGroupActions",
     "onCommand:jsonTree.showCanisterActions",
     "onCommand:jsonTree.showOptions",
-    "onCommand:jsonTree.configureDfxPath"
+    "onCommand:jsonTree.configureDfxPath",
+    "onCommand:react-webview.start"
   ],
-  "main": "./client/out/extension",
+  "main": "./build/client/extension.js",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -69,7 +74,7 @@
         {
           "id": "jsonTreeContainer",
           "title": "Motoko",
-          "icon": "client/src/media/dep.svg"
+          "icon": "build/media/dep.svg"
         }
       ]
     },
@@ -82,6 +87,11 @@
       ]
     },
     "commands": [
+      {
+        "command": "react-webview.start",
+        "title": "Start React Webview",
+        "category": "React"
+      },
       {
         "command": "jsonTree.refreshEntry",
         "title": "Refresh"
@@ -131,8 +141,8 @@
         "title": "Open Candid UI"
       },
       {
-        "command": "dfx.configureCandidUICanisterId",
-        "title": "Configure Candid UI Canister ID"
+        "command": "dfx.setCandidUICanisterId",
+        "title": "Set Candid UI Canister ID"
       }
     ],
     "menus": {
@@ -162,17 +172,34 @@
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-    "test": "sh ./scripts/e2e.sh"
+    "test": "sh ./scripts/e2e.sh",
+    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.13",
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.14.6",
+    "@types/react": "^16.3.14",
+    "@types/react-dom": "^16.0.5",
+    "@types/vscode": "^1.73.0",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.57.0",
     "mocha": "^10.3.0",
+    "react-scripts": "^5.0.1",
+    "rewire": "^6.0.0",
     "typescript": "^5.3.3",
-    "@types/vscode": "^1.73.0"
-  }
+		"@vscode/test-electron": "^2.3.9"
+  },
+  "overrides": {
+    "react-scripts": {
+      "typescript": "^5"
+    }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

@@ -9,7 +9,7 @@ import { JsonTreeProvider } from './jsonTreeProvider';
 import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
 import { setDfxPath, setCanisterLogs } from './modules/globalVariables';
-import { CanisterFileProvider } from './modules/canisterFileProvider';
+import { CandidUIWebviewProvider } from './modules/candidUIWebviewProvider';
 
 let client: LanguageClient;
 let dfxPath: string;
@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const rootPath = vscode.workspace.rootPath;
     const treeDataProvider = new JsonTreeProvider(rootPath);
-    const canistersFileProvider = new CanisterFileProvider(rootPath, WEBVIEW_PORT);
+    const canistersFileProvider = new CandidUIWebviewProvider(rootPath, WEBVIEW_PORT);
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
 
     const outputChannel = vscode.window.createOutputChannel("Motoko");
