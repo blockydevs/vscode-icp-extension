@@ -2,15 +2,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { JsonTreeItem } from '../jsonTreeProvider';
-import { getCandidUICanisterId } from './globalVariables';
 
 export class CandidUIWebviewProvider {
 	private jsonData: any;
+    private candidFileData: any;
     private jsonFilePath: string;
+    private candidFilePath: string;
     private webViewPort: number;
 
-	constructor (private workspaceRoot: string | undefined, private port : number) {
+	constructor (private workspaceRoot: string | undefined, private extensionPath : string, private port : number) {
         this.jsonFilePath = path.join(this.workspaceRoot!, '.dfx', 'local', 'canister_ids.json');
+        this.candidFilePath = path.join(this.extensionPath!, 'tools', 'ui', '.dfx', 'local', 'canister_ids.json');
         this.webViewPort = port;
         this.refresh();
     }
@@ -24,12 +26,18 @@ export class CandidUIWebviewProvider {
                 this.jsonData = null;
             }
         }
+        if (fs.existsSync(this.candidFilePath)) {
+            const candidFileContent = fs.readFileSync(this.candidFilePath, 'utf-8');
+            this.candidFileData = JSON.parse(candidFileContent);
+        } else {
+            this.candidFileData = null;
+        }
     }
 
     createWebViewPanel(item: JsonTreeItem) : void {
-        let canisterCandidUI = getCandidUICanisterId();
-        if (this.jsonData && canisterCandidUI && canisterCandidUI !== '') {
-            let canisterId = this.getCanisterId(item.label.split(':')[0]);
+        if (this.jsonData && this.candidFileData) {
+            let canisterId = this.getCanisterId(this.jsonData, item.label.split(':')[0]);
+            let canisterCandidUI = this.getCanisterId(this.candidFileData, 'didjs');
             const panel = vscode.window.createWebviewPanel('dfx.candidUIPreview', 'Candid UI', vscode.ViewColumn.One,
                 {
                     enableScripts: true,
@@ -63,7 +71,7 @@ export class CandidUIWebviewProvider {
                     </html>`
     }
 
-    private getCanisterId(key: string) : any {
-        return this.jsonData[key]["local"];
+    private getCanisterId(data: any, key: string) : any {
+        return data[key]["local"];
     }
 }

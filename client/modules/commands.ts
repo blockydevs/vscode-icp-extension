@@ -3,8 +3,8 @@ import { JsonTreeProvider, JsonTreeItem } from '../jsonTreeProvider';
 import { runCommand, createProject, viewLogs } from './projectManager';
 import { getDfxPath, setDfxPath, getCandidUICanisterId, setCandidUICanisterId } from './globalVariables';
 import { startReplica } from './replicaManager';
+import { startCandid } from './candidManager';
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
-import { ReactPanel } from './ReactPanel';
 
 export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, canistersFileProvider: CandidUIWebviewProvider, outputChannel: vscode.OutputChannel) {
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
@@ -14,6 +14,9 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     });
     vscode.commands.registerCommand('jsonTree.startReplica', () => {
         startReplica(outputChannel);
+    });
+    vscode.commands.registerCommand('dfx.startCandid', () => {
+        startCandid(outputChannel, context.extensionPath);  
     });
     vscode.commands.registerCommand('jsonTree.deployCanisters', () => {
         runCommand('dfx deploy --network playground', 'Deploying canisters...', undefined, outputChannel);
@@ -25,14 +28,10 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     vscode.commands.registerCommand('jsonTree.configureDfxPath', configureDfxPath);
     vscode.commands.registerCommand('jsonTree.viewLogs', viewLogs);
     vscode.commands.registerCommand('dfx.openCandidUI', (item: JsonTreeItem) => {
-        canistersFileProvider.refresh;
+        canistersFileProvider.refresh();
         canistersFileProvider.createWebViewPanel(item);
     });
     vscode.commands.registerCommand('dfx.setCandidUICanisterId', configureCandidUICanisterId);
-    context.subscriptions.push(vscode.commands.registerCommand('react-webview.start', () => {
-		ReactPanel.createOrShow(context.extensionPath, context.extensionUri);
-	}));
-	vscode.commands.executeCommand('react-webview.start');
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {
@@ -56,7 +55,7 @@ function openJson(filePath: string, keyPath: string, value: any) {
 }
 
 async function showCanisterGroupActions() {
-    const options = ['Start Replica', 'Deploy Canisters'];
+    const options = ['Start Replica', 'Deploy Canisters', 'Start Candid'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
@@ -65,6 +64,8 @@ async function showCanisterGroupActions() {
         vscode.commands.executeCommand('jsonTree.startReplica');
     } else if (selection === 'Deploy Canisters') {
         vscode.commands.executeCommand('jsonTree.deployCanisters');
+    } else if (selection === 'Start Candid') {
+        vscode.commands.executeCommand('dfx.startCandid');
     }
 }
 

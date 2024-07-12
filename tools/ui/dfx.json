@@ -1,0 +1,15 @@
+{
+  "canisters": {
+    "didjs": {
+      "type": "custom",
+      "candid": "src/didjs/didjs.did",
+      "wasm": "target/wasm32-unknown-unknown/release/didjs_opt.wasm",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
+    }
+  },
+  "version": 1
+}

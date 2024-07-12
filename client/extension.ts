@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const rootPath = vscode.workspace.rootPath;
     const treeDataProvider = new JsonTreeProvider(rootPath);
-    const canistersFileProvider = new CandidUIWebviewProvider(rootPath, WEBVIEW_PORT);
+    const canistersFileProvider = new CandidUIWebviewProvider(rootPath, context.extensionPath,  WEBVIEW_PORT);
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
 
     const outputChannel = vscode.window.createOutputChannel("Motoko");

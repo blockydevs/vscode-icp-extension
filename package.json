@@ -41,8 +41,7 @@
     "onCommand:jsonTree.showCanisterGroupActions",
     "onCommand:jsonTree.showCanisterActions",
     "onCommand:jsonTree.showOptions",
-    "onCommand:jsonTree.configureDfxPath",
-    "onCommand:react-webview.start"
+    "onCommand:jsonTree.configureDfxPath"
   ],
   "main": "./build/client/extension.js",
   "contributes": {
@@ -74,7 +73,7 @@
         {
           "id": "jsonTreeContainer",
           "title": "Motoko",
-          "icon": "build/media/dep.svg"
+          "icon": "public/media/dep.svg"
         }
       ]
     },
@@ -87,11 +86,6 @@
       ]
     },
     "commands": [
-      {
-        "command": "react-webview.start",
-        "title": "Start React Webview",
-        "category": "React"
-      },
       {
         "command": "jsonTree.refreshEntry",
         "title": "Refresh"
@@ -111,6 +105,10 @@
       {
         "command": "jsonTree.startReplica",
         "title": "Start Replica"
+      },
+      {
+        "command": "dfx.startCandid",
+        "title": "Start Candid"
       },
       {
         "command": "jsonTree.deployCanisters",
@@ -168,12 +166,13 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "tsc -b && cd ./tools/ui/ && npm run build",
+    "postinstall": "cd ./tools/ui && npm install",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
     "test": "sh ./scripts/e2e.sh",
-    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json"
+    "build": "tsc -b && cd ./tools/ui/ && npm run build"
   },
   "devDependencies": {
     "@types/jest": "^23.3.13",
