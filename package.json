@@ -166,7 +166,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "tsc -b && cd ./tools/ui/ && npm run build",
+    "vscode:prepublish": "npm install && tsc -b && cd ./tools/ui/ && npm run build",
     "postinstall": "cd ./tools/ui && npm install",
     "compile": "tsc -b",
     "watch": "tsc -b -w",

@@ -1,2 +1,0 @@
-import service "actor.did";
-import service "example.did";

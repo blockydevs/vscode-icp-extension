@@ -1,4 +1,0 @@
-type b = record { int;nat };
-service : {
-  bbbbb : (b) -> ();
-}
