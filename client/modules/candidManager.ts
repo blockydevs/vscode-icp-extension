@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import { getDfxPath } from './globalVariables';
 import * as path from 'path';
 
 export function startCandid(outputChannel: vscode.OutputChannel, extensionPath: string) {
     outputChannel.show(true);
     outputChannel.appendLine(`Starting Candid UI ...`);
     
-    const command = getDfxPath() ? `wsl ${getDfxPath()}dfx deploy` : `dfx deploy`;
+    const command = `dfx deploy`;
     const candidProcess = exec(command, { cwd: path.join(extensionPath, 'tools', 'ui') });
 
     if (candidProcess.stdout) {

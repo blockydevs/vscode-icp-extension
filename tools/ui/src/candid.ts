@@ -6,6 +6,7 @@ import {
 import {Principal} from '@dfinity/principal'
 import './candid.css';
 import { AuthClient } from "@dfinity/auth-client";
+import { Accordion } from './accordion';
 
 declare var flamegraph: any;
 declare var d3: any;
@@ -270,20 +271,94 @@ export function render(id: Principal, canister: ActorSubclass, profiling: bigint
     renderFlameGraph(profiler);
   }
   const sortedMethods = Actor.interfaceOf(canister)._fields.sort(([a], [b]) => (a > b ? 1 : -1));
-  for (const [name, func] of sortedMethods) {
+  const calls = sortedMethods.filter(([_, func]) => !is_query(func));
+  const queries = sortedMethods.filter(([_, func]) => is_query(func));
+
+  for (const [name, func] of [...calls, ...queries]) {
     renderMethod(canister, name, func, profiler);
   }
 }
 
 function renderMethod(canister: ActorSubclass, name: string, idlFunc: IDL.FuncClass, profiler: any) {
+  const callArgumentsState: string[] =idlFunc.argTypes.map(() => ''); 
+
+  // ACCORDION BODY INPUTS
+  const inputContainer = document.createElement('div');
+  inputContainer.className = 'input-container';
+
+  const inputs: InputBox[] = [];
+  idlFunc.argTypes.forEach((arg, i) => {
+    const inputbox = renderInput(arg);
+    inputbox.ui.input?.addEventListener('input', (e) => {
+      const event = e as InputEvent;
+      const input = event.target as HTMLInputElement;
+      callArgumentsState[i] = input.value;
+      updateSingleInput();
+    });
+    inputs.push(inputbox);
+    inputbox.render(inputContainer);
+  });
+
+  function updateMultiInput() {
+    inputs.forEach((inputBox, i) => {
+      const input = inputBox.ui.input as any; 
+      if(!input) return;
+      input.value = callArgumentsState[i];
+    })
+  }
+
+
   const item = document.createElement('li');
+  const accordionBody = document.createElement('div');
+  accordionBody.className = 'method-actions';
   item.id = name;
+   
+  // ACCORDION HEADER
+  const inputWrapper = document.createElement('form');
+  inputWrapper.className = 'method-input-wrapper';
 
-  const sig = document.createElement('div');
-  sig.className = 'signature';
-  sig.innerHTML = `<b>${name}</b>: ${idlFunc.display()}`;
-  item.appendChild(sig);
+  const methodNameBtn = document.createElement('button');
+  methodNameBtn.type = 'submit';
+  methodNameBtn.className = is_query(idlFunc) ? 'btn-method' : 'btn-method mutable-method-btn';
+  methodNameBtn.innerHTML = `<span class="text">${name}</span>`;
+  
+  inputWrapper.addEventListener('submit', (e: any) => {
+    e.preventDefault();
+    callAndRender(callArgumentsState);
+  })
+  
+  const input = document.createElement('input');
+  input.name = 'args';
+  input.placeholder = idlFunc.argTypes.map((argType) => argType.display()).join(',');
+  input.addEventListener('input', (e) => {
+    const target = e.target as HTMLInputElement;
+    const inputValues = target.value.split(',');
+    callArgumentsState.forEach((inputArgs, i) => {
+      callArgumentsState[i] = inputValues[i] || '';
+    }); 
+    updateMultiInput();
+  });
 
+  function updateSingleInput() {
+    input.value = callArgumentsState.join(',');
+  }
+
+
+  inputWrapper.appendChild(methodNameBtn);
+  if(callArgumentsState.length) {
+    inputWrapper.appendChild(input);
+  }
+
+  // EXPANDED ACCORDION HEADER
+  const methodNameOnExpandedAccordion = document.createElement('div');
+  methodNameOnExpandedAccordion.className = 'method-name-accordion';
+  methodNameOnExpandedAccordion.textContent = name;
+
+  // ACCORDION BODY METHOD SIGNATURE
+  const methodSignature = document.createElement('div');
+  methodSignature.className = 'method-signature';
+  methodSignature.innerHTML = idlFunc.display();
+  
   const methodListItem = document.createElement('li');
   const methodLink = document.createElement('a');
   methodLink.innerText = name;
@@ -291,22 +366,14 @@ function renderMethod(canister: ActorSubclass, name: string, idlFunc: IDL.FuncCl
   methodListItem.appendChild(methodLink);
   document.getElementById('methods-list')!.appendChild(methodListItem);
 
-  const inputContainer = document.createElement('div');
-  inputContainer.className = 'input-container';
-  item.appendChild(inputContainer);
-
-  const inputs: InputBox[] = [];
-  idlFunc.argTypes.forEach((arg, i) => {
-    const inputbox = renderInput(arg);
-    inputs.push(inputbox);
-    inputbox.render(inputContainer);
-  });
+  accordionBody.appendChild(methodSignature);
+  accordionBody.appendChild(inputContainer);
 
   const buttonContainer = document.createElement('div');
   buttonContainer.className = 'button-container';
 
   const buttonQuery = document.createElement('button');
-  buttonQuery.className = 'btn';
+  buttonQuery.className = 'btn btn-method-action';
   if (is_query(idlFunc)) {
     buttonQuery.innerText = 'Query';
   } else {
@@ -315,10 +382,13 @@ function renderMethod(canister: ActorSubclass, name: string, idlFunc: IDL.FuncCl
   buttonContainer.appendChild(buttonQuery);
 
   const buttonRandom = document.createElement('button');
-  buttonRandom.className = 'btn random';
+  buttonRandom.className = 'btn btn-method-action';
   buttonRandom.innerText = 'Random';
   buttonContainer.appendChild(buttonRandom);
-  item.appendChild(buttonContainer);
+  accordionBody.appendChild(buttonContainer);
+
+  const accordion = new Accordion(inputWrapper, methodNameOnExpandedAccordion, accordionBody);
+  item.appendChild(accordion.getAccordion());
 
   const resultDiv = document.createElement('div');
   resultDiv.className = 'result';
@@ -454,7 +524,8 @@ function renderMethod(canister: ActorSubclass, name: string, idlFunc: IDL.FuncCl
     resultButtons.appendChild(button);
   });
 
-  buttonRandom.addEventListener('click', () => {
+  buttonRandom.addEventListener('click', (e) => {
+    e.preventDefault();
     const args = inputs.map(arg => arg.parse({ random: true }));
     const isReject = inputs.some(arg => arg.isRejected());
     if (isReject) {
@@ -462,8 +533,9 @@ function renderMethod(canister: ActorSubclass, name: string, idlFunc: IDL.FuncCl
     }
     callAndRender(args);
   });
-
-  buttonQuery.addEventListener('click', () => {
+  
+  buttonQuery.addEventListener('click', (e) => {
+    e.preventDefault();
     const args = inputs.map(arg => arg.parse());
     const isReject = inputs.some(arg => arg.isRejected());
     if (isReject) {
@@ -499,4 +571,3 @@ function log(content: Element | string) {
   outputEl.appendChild(line);
   line.scrollIntoView();
 }
-

@@ -17,7 +17,8 @@
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.11",
     "vscode-languageclient": "^9.0.1",
-		"json-to-ast": "^2.1.0"
+		"json-to-ast": "^2.1.0",
+    "jsonc-parser": "^0.4.2"
   },
   "keywords": [
     "vscode",
@@ -39,9 +40,7 @@
     "onCommand:jsonTree.deployCanisters",
     "onCommand:jsonTree.openJson",
     "onCommand:jsonTree.showCanisterGroupActions",
-    "onCommand:jsonTree.showCanisterActions",
-    "onCommand:jsonTree.showOptions",
-    "onCommand:jsonTree.configureDfxPath"
+    "onCommand:jsonTree.showCanisterActions"
   ],
   "main": "./build/client/extension.js",
   "contributes": {
@@ -91,10 +90,6 @@
         "title": "Refresh"
       },
       {
-        "command": "jsonTree.createProject",
-        "title": "Create New Project"
-      },
-      {
         "command": "jsonTree.deployCanister",
         "title": "Deploy Canister"
       },
@@ -105,10 +100,6 @@
       {
         "command": "jsonTree.startReplica",
         "title": "Start Replica"
-      },
-      {
-        "command": "dfx.startCandid",
-        "title": "Start Candid"
       },
       {
         "command": "jsonTree.deployCanisters",
@@ -127,14 +118,6 @@
         "title": "Show Canister Actions"
       },
       {
-        "command": "jsonTree.showOptions",
-        "title": "options"
-      },
-      {
-        "command": "jsonTree.configureDfxPath",
-        "title": "Configure WSL DFX Path"
-      },
-      {
         "command": "dfx.openCandidUI",
         "title": "Open Candid UI"
       },
@@ -146,7 +129,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "jsonTree.showOptions",
+          "command": "jsonTree.refreshEntry",
           "when": "view == jsonTree",
           "group": "navigation"
         }
@@ -201,4 +184,5 @@
     "not ie <= 11",
     "not op_mini all"
   ]
+  
 }

@@ -9,7 +9,7 @@ async function main() {
   const params = new URLSearchParams(window.location.search);
   const cid = params.get("id");
   if (!cid) {
-    document.body.innerHTML = `<div id="main-content">
+    document.body.innerHTML = `<div class="provide-canister-page">
     <label>Provide a canister ID: </label>
     <input id="id" type="text"><br>
     <label>Choose a did file (optional) </label>

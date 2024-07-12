@@ -5,14 +5,13 @@
 
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
-import { JsonTreeProvider } from './jsonTreeProvider';
+import { JsonTreeProvider } from './modules/jsonTreeProvider';
 import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
-import { setDfxPath, setCanisterLogs } from './modules/globalVariables';
+import { setCanisterLogs } from './modules/globalVariables';
 import { CandidUIWebviewProvider } from './modules/candidUIWebviewProvider';
 
 let client: LanguageClient;
-let dfxPath: string;
 const WEBVIEW_PORT = 4943;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -29,7 +28,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(outputChannel);
 
     // Set initial global variables
-    setDfxPath('');
     setCanisterLogs({});
 
     activateCommands(context, treeDataProvider, canistersFileProvider, outputChannel);
