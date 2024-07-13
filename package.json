@@ -94,10 +94,6 @@
         "title": "Deploy Canister"
       },
       {
-        "command": "dfx.candid",
-        "title": "Open Candid UI"
-      },
-      {
         "command": "jsonTree.startReplica",
         "title": "Start Replica"
       },
@@ -118,12 +114,12 @@
         "title": "Show Canister Actions"
       },
       {
-        "command": "dfx.openCandidUI",
-        "title": "Open Candid UI"
+        "command": "dfx.startCandid",
+        "title": "Deploy Candid"
       },
       {
-        "command": "dfx.setCandidUICanisterId",
-        "title": "Set Candid UI Canister ID"
+        "command": "dfx.openCandidUI",
+        "title": "Open Candid UI"
       }
     ],
     "menus": {

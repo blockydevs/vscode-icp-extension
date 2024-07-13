@@ -3,6 +3,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { JsonTreeItem } from './jsonTreeProvider';
 
+const CANDID_CANISTER_NAME = 'didjs';
+const CANISTER_DEPLOYMENT_ENVIRONMENT = 'local';
+
 export class CandidUIWebviewProvider {
 	private jsonData: any;
     private candidFileData: any;
@@ -35,22 +38,33 @@ export class CandidUIWebviewProvider {
     }
 
     createWebViewPanel(item: JsonTreeItem) : void {
-        if (this.jsonData && this.candidFileData) {
-            let canisterId = this.getCanisterId(this.jsonData, item.label.split(':')[0]);
-            let canisterCandidUI = this.getCanisterId(this.candidFileData, 'didjs');
-            const panel = vscode.window.createWebviewPanel('dfx.candidUIPreview', 'Candid UI', vscode.ViewColumn.One,
-                {
-                    enableScripts: true,
-                    portMapping: [
-                        { webviewPort: this.webViewPort, extensionHostPort: 8000}
-                    ]
-                });
+        let itemKey = item.label?.split(':')[0];
+        if (!this.candidFileData) {
+            this.showInformationMessage(`Could not acquire Candid UI canister file. Have you deployed Candid?`);
+        }
+        else if (!this.jsonData) {
+            this.showInformationMessage(`Could not acquire deployed ${itemKey} canister file. Have you properly deployed the canister?`);
+        }
 
-            panel.webview.html = this.getWebviewContent(canisterCandidUI, canisterId);
-        }
         else {
-            vscode.window.showInformationMessage(`Could not get proper configuration for opening Candid UI`);
+            let canisterCandidUI = this.getCanisterId(this.candidFileData, CANDID_CANISTER_NAME);
+            let canisterId = this.getCanisterId(this.jsonData, itemKey);
+            if (canisterCandidUI && canisterId) {
+                const panel = vscode.window.createWebviewPanel('dfx.candidUIPreview', 'Candid UI', vscode.ViewColumn.One,
+                    {
+                        enableScripts: true,
+                        portMapping: [
+                            { webviewPort: this.webViewPort, extensionHostPort: 8000}
+                        ]
+                    });
+
+                panel.webview.html = this.getWebviewContent(canisterCandidUI, canisterId);
+            }
+            else {
+                this.showInformationMessage(`Could not get proper configuration for opening Candid UI`);
+            }
         }
+        
     }
 
     private getWebviewContent(canisterCandidUI: any, canisterId: any) : string {
@@ -72,6 +86,15 @@ export class CandidUIWebviewProvider {
     }
 
     private getCanisterId(data: any, key: string) : any {
-        return data[key]["local"];
+        if (data[key] && data[key][CANISTER_DEPLOYMENT_ENVIRONMENT]) {
+            return data[key][CANISTER_DEPLOYMENT_ENVIRONMENT];
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    private showInformationMessage(message: string) : void {
+        vscode.window.showInformationMessage(message);
     }
 }

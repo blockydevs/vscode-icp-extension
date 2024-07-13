@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
 import { runCommand, viewLogs } from './logsManager';
-import { getCandidUICanisterId, setCandidUICanisterId } from './globalVariables';
 import { startReplica } from './replicaManager';
 import { startCandid } from './candidManager';
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
@@ -28,7 +27,6 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
         canistersFileProvider.refresh();
         canistersFileProvider.createWebViewPanel(item);
     });
-    vscode.commands.registerCommand('dfx.setCandidUICanisterId', configureCandidUICanisterId);
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {
@@ -52,7 +50,7 @@ function openJson(filePath: string, keyPath: string, value: any) {
 }
 
 async function showCanisterGroupActions() {
-    const options = ['Start Replica', 'Deploy Canisters', 'Start Candid'];
+    const options = ['Start Replica', 'Deploy Canisters', 'Deploy Candid'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
@@ -61,7 +59,7 @@ async function showCanisterGroupActions() {
         vscode.commands.executeCommand('jsonTree.startReplica');
     } else if (selection === 'Deploy Canisters') {
         vscode.commands.executeCommand('jsonTree.deployCanisters');
-    } else if (selection === 'Start Candid') {
+    } else if (selection === 'Deploy Candid') {
         vscode.commands.executeCommand('dfx.startCandid');
     }
 }
@@ -78,17 +76,5 @@ async function showCanisterActions(item: JsonTreeItem) {
         vscode.commands.executeCommand('jsonTree.viewLogs', item);
     } else if (selection === 'Open Candid UI') {
         vscode.commands.executeCommand('dfx.openCandidUI', item);
-    }
-}
-
-async function configureCandidUICanisterId() {
-    let canisterId = await vscode.window.showInputBox({
-        prompt: 'Enter the Candid UI Canister ID that you wish to display',
-        placeHolder: 'bw4dl-smaaa-aaaaa-qaacq-cai'
-    });
-
-    if (canisterId) {
-        setCandidUICanisterId(canisterId);
-        vscode.window.showInformationMessage(`Candid UI Canister ID path set to: ${getCandidUICanisterId()}`);
     }
 }

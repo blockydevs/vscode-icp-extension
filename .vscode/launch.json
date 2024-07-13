@@ -18,22 +18,6 @@
 			]
         },
 		{
-			"type": "extensionHost",
-			"request": "launch",
-			"name": "Launch Client",
-			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}"],
-			"outFiles": [
-				"${workspaceRoot}/build/client/**/*.js",
-				"${workspaceRoot}/build/server/**/*.js"
-			],
-			"autoAttachChildProcesses": true,
-			"preLaunchTask": {
-				"type": "npm",
-				"script": "watch"
-			}
-		},
-		{
 			"name": "Language Server E2E Test",
 			"type": "extensionHost",
 			"request": "launch",
