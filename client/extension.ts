@@ -10,9 +10,9 @@ import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
 import { setCanisterLogs } from './modules/globalVariables';
 import { CandidUIWebviewProvider } from './modules/candidUIWebviewProvider';
+import { CandidUIWebviewSidebarProvider } from './modules/candidUIWebviewSidebarProvider';
 
 let client: LanguageClient;
-const WEBVIEW_PORT = 4943;
 
 export function activate(context: vscode.ExtensionContext) {
     client = configureLanguageClient(context);
@@ -21,7 +21,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     const rootPath = vscode.workspace.rootPath;
     const treeDataProvider = new JsonTreeProvider(rootPath);
-    const canistersFileProvider = new CandidUIWebviewProvider(rootPath, context.extensionPath,  WEBVIEW_PORT);
+    const candidUIWebviewProvider = new CandidUIWebviewProvider(rootPath, context.extensionPath);
+    const candidUIWebviewSidebarProvider = new CandidUIWebviewSidebarProvider(context.extensionUri, rootPath, context.extensionPath);
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
 
     const outputChannel = vscode.window.createOutputChannel("Motoko");
@@ -30,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Set initial global variables
     setCanisterLogs({});
 
-    activateCommands(context, treeDataProvider, canistersFileProvider, outputChannel);
+    activateCommands(context, treeDataProvider, candidUIWebviewProvider, candidUIWebviewSidebarProvider, outputChannel);
 }
 
 export function deactivate(): Thenable<void> | undefined {
