@@ -11,21 +11,16 @@
   --font-sm: 1.2rem;
   --font-md: 1.4rem;
   --font-lg: 2.4rem;
-  --primary: #405d72;
-  --light-bg: #f6f6f7;
-  --white: #f9f9f9;
-  --lightest: #ebf0fa;
-  --lighter: #eaeaea;
-  --light: #e5e5e5;
-  --medium: #c3c3c4;
-  --dark: #818284;
-  --darker: #545454;
-  --darkest: #292a2e;
-  --error: #b82121;
+}
+
+body {
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
 }
 
 #app {
   font-size: var(--font-md);
+  color: var(--vscode-editor-foreground);
 }
 
 #container {
@@ -41,13 +36,11 @@
 
 .provide-canister-page {
   font-size: var(--font-md);
-  color: var(--darkest);
+  color: var(--vscode-editor-foreground);
   margin: 1rem;
   padding: 1rem;
   border-radius: 1rem;
-  background-color: var(--light-bg);
-}
-.provide-canister-page input {
+  background-color: var(--vscode-editor-background);
 }
 
 #header {
@@ -55,8 +48,7 @@
   width: 100%;
   text-align: center;
   font-size: var(--font-md);
-  color: var(--darkest);
-  border-bottom: 1px solid var(--dark);
+  border-bottom: 1px solid var(--vscode-badge-background);
 
   display: flex;
   justify-content: space-between;
@@ -76,9 +68,9 @@
 
 #methods {
   font-family: "Vremena Grotesk", "Roboto Mono", monospace;
-  margin: 0;
+  margin: 1.8rem 1.8rem 1.8rem 0;
   padding: 2rem;
-  background-color: var(--light-bg);
+  background-color: var(--vscode-textCodeBlock-background);
   border-radius: 1rem;
   display: flex;
   flex-direction: column;
@@ -116,9 +108,24 @@
   border: 0;
 }
 
-button:focus,
-input:focus {
-  outline: 1px solid var(--darkest);
+input,
+input:focus,
+#methods input,
+#methods button,
+#methods input:focus,
+#methods button:active {
+  outline: 1px solid var(--vscode-button-border);
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-editor-foreground);
+}
+
+#methods input,
+#methods button {
+  border: 1px solid var(--vscode-input-border);
+}
+
+#methods button {
+  background-color: var(--vscode-button-secondaryBackground);
 }
 
 input[type="number"]::-webkit-inner-spin-button {
@@ -160,8 +167,8 @@ input[type="checkbox"] ~ .popup-form {
 }
 
 .reject {
-  border-color: var(--error) !important;
-  box-shadow: 0 0 1px var(--error);
+  border-color: var(--vscode-errorForeground) !important;
+  box-shadow: 0 0 1px var(--vscode-errorForeground);
 }
 .result {
   display: none;
@@ -171,7 +178,7 @@ input[type="checkbox"] ~ .popup-form {
   font-size: 1.4rem;
 }
 .error {
-  color: var(--error);
+  color: var(--vscode-errorForeground);
 }
 .status {
   display: none;
@@ -179,7 +186,7 @@ input[type="checkbox"] ~ .popup-form {
   top: 3.1rem;
   left: 0.2rem;
   font-size: 1.2rem;
-  color: var(--error);
+  color: var(--vscode-errorForeground);
   white-space: pre;
 }
 .left {
@@ -202,19 +209,20 @@ input[type="checkbox"] ~ .popup-form {
 .btn {
   font-family: "Roboto", sans-serif;
   letter-spacing: 0.05rem;
-  background-color: var(--lighter);
-  color: var(--darkest);
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
   font-size: 1.4rem;
   padding: 0.5rem 1rem;
   border: 0;
   text-transform: uppercase;
   border-radius: 0.5rem;
+  border: var(--vscode-button-border);
   cursor: pointer;
   position: relative;
 }
 
 .mutable-method-btn {
-  background-color: var(--medium) !important;
+  background-color: var(--vscode-button-hoverBackground) !important;
 }
 
 .btn::after {
@@ -225,21 +233,23 @@ input[type="checkbox"] ~ .popup-form {
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.3);
+  border-radius: 0.5rem;
   opacity: 0;
 }
 
 .btn:hover::after {
+  border-radius: 0.5rem;
   opacity: 1;
 }
 
 .btn-method {
   font-family: "Roboto", sans-serif;
   letter-spacing: 0.05rem;
-  background-color: var(--lighter);
-  color: var(--darkest);
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
   font-size: 1.4rem;
   padding: 0.5rem 1rem;
-  border: var(--primary);
+  border: var(--vscode-button-border);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -255,6 +265,7 @@ input[type="checkbox"] ~ .popup-form {
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
   opacity: 0;
 }
 
@@ -269,7 +280,7 @@ input[type="checkbox"] ~ .popup-form {
   text-overflow: ellipsis;
 }
 
-​ .btn-auth {
+​.btn-auth {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -298,9 +309,9 @@ input[type="checkbox"] ~ .popup-form {
   display: block;
 }
 .result-buttons .btn {
-  color: var(--darkest);
-  background-color: var(--white);
-  border: 1px solid var(--darkest);
+  color: var(--vscode-button-foreground);
+  background-color: var(--vscode-button-background);
+  border: 1px solid var(--vscode-button-border);
   font-size: 1.1rem;
   padding: 0.2rem 0.8rem;
 }
@@ -309,21 +320,20 @@ input[type="checkbox"] ~ .popup-form {
 }
 .result-buttons .btn:focus,
 .result-buttons .btn:hover {
-  background-color: var(--light);
+  background-color: var(--vscode-button-hoverBackground);
 }
 .result-buttons .btn:active {
-  background-color: var(--lightest);
+  background-color: var(--vscode-button-hoverBackground);
 }
 .result-buttons .btn.active {
-  color: var(--white);
-  background-color: var(--darkest);
+  background-color: var(--vscode-button-hoverBackground);
 }
 
 #console {
   overflow: hidden;
   height: var(--header-height);
-  background-color: var(--light-bg);
-  color: var(--darkest);
+  background-color: var(--vscode-debugToolBar-background);
+  color: var(--vscode-terminal-foreground);
   transition: height 0.2s ease-in-out;
 }
 #console.open {
@@ -333,7 +343,7 @@ input[type="checkbox"] ~ .popup-form {
 #console-bar {
   display: flex;
   height: var(--header-height);
-  background-color: var(--white);
+  background-color: var(--vscode-panel-background);
   padding: 0;
   border-bottom: 1px solid var(--light);
 }
@@ -343,7 +353,7 @@ input[type="checkbox"] ~ .popup-form {
   justify-content: center;
   width: 100%;
   height: var(--header-height);
-  background-color: var(--light-bg);
+  background-color: var(--vscode-debugToolBar-background);
   font-size: 2rem;
   font-family: var(--font-circular);
   text-align: center;
@@ -351,7 +361,7 @@ input[type="checkbox"] ~ .popup-form {
 }
 
 .active-tab {
-  background-color: var(--lighter);
+  background-color: var(--vscode-activityBar-activeBackground);
 }
 
 #output-pane,
@@ -376,7 +386,7 @@ input[type="checkbox"] ~ .popup-form {
   overflow-wrap: break-word;
 }
 .output-line:nth-child(2n-1) {
-  background-color: var(--lighter);
+  background-color: var(--vscode-disabledForeground);
 }
 
 #methods-list {
@@ -385,16 +395,10 @@ input[type="checkbox"] ~ .popup-form {
 #methods-list a {
   display: block;
   padding: 0.7rem 1.5rem;
-  color: var(--darkest);
 }
 #methods-list a:focus,
 #methods-list a:hover {
-  background-color: var(--darker);
-  color: var(--white);
   text-decoration: none;
-}
-#methods-list a:active {
-  background-color: var(--darkest);
 }
 
 .method-name-accordion {
@@ -422,11 +426,6 @@ input[type="checkbox"] ~ .popup-form {
   border-bottom-left-radius: 0.5rem;
   border-right: 0;
   width: 50%;
-}
-
-.method-input-wrapper button:focus,
-.method-input-wrapper button:active {
-  outline: 0;
 }
 
 .method-input-wrapper input {
@@ -470,9 +469,11 @@ input[type="checkbox"] ~ .popup-form {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: black;
   font-size: 32px;
   cursor: pointer;
+}
+.accordion .accordion__header .toggler svg {
+  fill: var(--vscode-editor-foreground) !important;
 }
 
 .accordion--expand .accordion__header .toggler {
@@ -495,11 +496,6 @@ input[type="checkbox"] ~ .popup-form {
 @media not screen and (min-width: 600px) {
   .button-container {
     justify-content: flex-end;
-  }
-  #header {
-    flex-direction: column;
-    padding: 1rem 0;
-    gap: 1rem;
   }
 }
 
@@ -560,6 +556,8 @@ input[type="checkbox"] ~ .popup-form {
     flex: 0;
     font-size: 4rem;
     padding: 0.8rem;
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
   }
 
   .console-header {

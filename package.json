@@ -40,7 +40,8 @@
     "onCommand:jsonTree.deployCanisters",
     "onCommand:jsonTree.openJson",
     "onCommand:jsonTree.showCanisterGroupActions",
-    "onCommand:jsonTree.showCanisterActions"
+    "onCommand:jsonTree.showCanisterActions",
+    "onView:calicoColors.colorsView"
   ],
   "main": "./build/client/extension.js",
   "contributes": {
@@ -81,6 +82,11 @@
         {
           "id": "jsonTree",
           "name": "Motoko"
+        },
+        {
+          "type": "webview",
+          "id": "dfx.candidUISidebar",
+          "name": "Candid UI"
         }
       ]
     },
@@ -120,6 +126,10 @@
       {
         "command": "dfx.openCandidUI",
         "title": "Open Candid UI"
+      },
+      {
+        "command": "dfx.openCandidUISidebar",
+        "title": "Open Candid UI in sidebar"
       }
     ],
     "menus": {

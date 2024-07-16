@@ -4,8 +4,13 @@ import { runCommand, viewLogs } from './logsManager';
 import { startReplica } from './replicaManager';
 import { startCandid } from './candidManager';
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
+import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
 
-export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, canistersFileProvider: CandidUIWebviewProvider, outputChannel: vscode.OutputChannel) {
+export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, 
+                                 candidUIWebviewProvider: CandidUIWebviewProvider, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider,
+                                 outputChannel: vscode.OutputChannel) {
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(CandidUIWebviewSidebarProvider.viewType, candidUIWebviewSidebarProvider));
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
         runCommand(`dfx deploy ${item.label.split(':')[0]}`, `Deploying canister: ${item.label}`, item.label, outputChannel);
@@ -24,9 +29,13 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
         startCandid(outputChannel, context.extensionPath);  
     });
     vscode.commands.registerCommand('dfx.openCandidUI', (item: JsonTreeItem) => {
-        canistersFileProvider.refresh();
-        canistersFileProvider.createWebViewPanel(item);
+        candidUIWebviewProvider.refresh();
+        candidUIWebviewProvider.createWebViewPanel(item);
     });
+    vscode.commands.registerCommand('dfx.openCandidUISidebar', (item: JsonTreeItem) => {
+        candidUIWebviewSidebarProvider.refreshWebview(item);
+    });
+
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {
@@ -65,7 +74,7 @@ async function showCanisterGroupActions() {
 }
 
 async function showCanisterActions(item: JsonTreeItem) {
-    const options = ['Deploy Canister', 'View Logs', 'Open Candid UI'];
+    const options = ['Deploy Canister', 'View Logs', 'Open Candid UI', 'Open Candid UI in sidebar'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
@@ -76,5 +85,7 @@ async function showCanisterActions(item: JsonTreeItem) {
         vscode.commands.executeCommand('jsonTree.viewLogs', item);
     } else if (selection === 'Open Candid UI') {
         vscode.commands.executeCommand('dfx.openCandidUI', item);
+    } else if (selection === 'Open Candid UI in sidebar') {
+        vscode.commands.executeCommand('dfx.openCandidUISidebar', item);
     }
 }

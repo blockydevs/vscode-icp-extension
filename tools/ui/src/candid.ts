@@ -498,10 +498,13 @@ function renderMethod(canister: ActorSubclass, name: string, idlFunc: IDL.FuncCl
       jsonContainer.innerText = JSON.stringify(callResult, (k,v) => typeof v === 'bigint'?v.toString():v);
     })().catch(err => {
       resultDiv.classList.add('error');
+      const showArgs = encodeStr(IDL.FuncClass.argsToString(idlFunc.argTypes, args));
       left.innerText = err.message;
-      if (profiler && !is_query(idlFunc)) {
-        const showArgs = encodeStr(IDL.FuncClass.argsToString(idlFunc.argTypes, args));
-        log(`[Error] ${name}${showArgs}`);
+      const errorElement = document.createElement('div');
+      errorElement.className = 'error';
+      errorElement.innerText = `[Error] ${name}${showArgs}. Message ${err.message}.` ;
+      log(errorElement);
+      if (profiler) {
         renderFlameGraph(profiler);
       }
       if (!is_query(idlFunc)) {
