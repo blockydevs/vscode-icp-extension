@@ -70,18 +70,36 @@ export class CandidUIWebviewProvider {
     private getWebviewContent(canisterCandidUI: any, canisterId: any) : string {
         return `<!DOCTYPE html>
                     <html lang="en"">
-                    <head>
+                        <head>
                         <meta charset="UTF-8">
-                        <title>Candid UI</title>
-                        <style>
-                            html { width: 100%; height: 100%; min-height: 100%; display: flex; }
-                            body { flex: 1; display: flex; }
-                            iframe { flex: 1; border: none; background: white; }
-                        </style>
-                    </head>
-                    <body>
-                        <iframe src="http://localhost:${this.webViewPort}/?canisterId=${canisterCandidUI}&id=${canisterId}"></iframe>
-                    </body>
+                            <title>Candid UI</title>
+                            <style>
+                                html { width: 100%; height: 100%; min-height: 100%; display: flex; }
+                                body { flex: 1; display: flex; }
+                                iframe { flex: 1; border: none; background: white; }
+                            </style>
+                            </head>
+                            <body>
+                              <script>
+                                function getAllStyles() {
+                                    const styles = document.querySelector('html').getAttribute('style');
+                                    return styles;
+                                }
+
+                                function addStylesToIframe(styles) {
+                                    const body = document.querySelector('body');
+                                    const iframe = document.createElement('iframe');
+                                    iframe.src = "http://localhost:${this.webViewPort}/?canisterId=${canisterCandidUI}&id=${canisterId}";
+                                    iframe.onload = function() {
+                                        iframe.contentWindow.postMessage(styles, "*");
+                                    }
+                                    body.appendChild(iframe);                         
+                                }
+
+                                const styles = getAllStyles();
+                                addStylesToIframe(styles);
+                            </script>
+                            </body>
                     </html>`
     }
 

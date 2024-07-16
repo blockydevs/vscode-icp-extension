@@ -80,6 +80,21 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/d3-flame-graph@4.1.3/dist/d3-flamegraph.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/d3-flame-graph@4.1.3/dist/d3-flamegraph-tooltip.min.js"></script>
     <script>
+      window.addEventListener(
+        "message",
+        (e) => {
+          const styles = e.data;
+          const domStyles = document.getElementById("dynamic-styles");
+          domStyles.innerText = `
+            :root{
+              ${styles}
+            }
+          `;
+        },
+        false
+      );
+    </script>
+    <script>
       initializeConsoleControls();
       function initializeConsoleControls() {
         const consoleEl = document.getElementById('console');
