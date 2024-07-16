@@ -122,6 +122,7 @@ input:focus,
 #methods input,
 #methods button {
   border: 1px solid var(--vscode-input-border);
+  padding: 4px;
 }
 
 #methods button {
@@ -222,7 +223,8 @@ input[type="checkbox"] ~ .popup-form {
 }
 
 .mutable-method-btn {
-  background-color: var(--vscode-button-hoverBackground) !important;
+  background-color: var(--vscode-extensionButton-background) !important;
+  color: var(--vscode-extensionButton-foreground) !important;
 }
 
 .btn::after {
@@ -471,13 +473,14 @@ input[type="checkbox"] ~ .popup-form {
   align-items: center;
   font-size: 32px;
   cursor: pointer;
+  transform: rotate(180deg);
 }
 .accordion .accordion__header .toggler svg {
   fill: var(--vscode-editor-foreground) !important;
 }
 
 .accordion--expand .accordion__header .toggler {
-  transform: rotate(180deg);
+  transform: rotate(0);
 }
 .accordion .accordion__body {
   overflow: hidden;
@@ -552,13 +555,6 @@ input[type="checkbox"] ~ .popup-form {
     border-bottom: none;
     border-left: 1px solid var(--light);
   }
-  #console-bar button {
-    flex: 0;
-    font-size: 4rem;
-    padding: 0.8rem;
-    background-color: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
-  }
 
   .console-header {
     display: none;
@@ -592,4 +588,36 @@ input[type="checkbox"] ~ .popup-form {
   #methods-list {
     height: calc(100vh - (var(--header-height) * 2));
   }
+  #console-bar button {
+    flex: 0;
+    font-size: 4rem;
+    padding: 0.8rem;
+  }
+}
+
+#console-bar button {
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px var(--vscode-scrollbar-shadow);
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--vscode-scrollbarSlider-activeBackground);
 }
