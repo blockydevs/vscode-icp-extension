@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
+import { JsonTreeCandidProvider } from './jsonTreeCandidProvider';
 import { runCommand, viewLogs } from './logsManager';
 import { startReplica } from './replicaManager';
 import { startCandid, startCandidSync } from './candidManager';
@@ -7,20 +8,20 @@ import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
 import { getCandidUIDeployed } from './globalVariables';
 
-export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, 
+export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, jsonTreeCandidProvider: JsonTreeCandidProvider,
                                  candidUIWebviewProvider: CandidUIWebviewProvider, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider,
                                  outputChannel: vscode.OutputChannel) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(CandidUIWebviewSidebarProvider.viewType, candidUIWebviewSidebarProvider));
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
-        runCommand(`dfx deploy ${item.label.split(':')[0]}`, `Deploying canister: ${item.label}`, item.label, outputChannel);
+        runCommand(`dfx deploy ${item.label.split(':')[0]}`, `Deploying canister: ${item.label}`, item.label, outputChannel, jsonTreeCandidProvider);
     });
     vscode.commands.registerCommand('jsonTree.startReplica', () => {
         startReplica(outputChannel);
     });
     vscode.commands.registerCommand('jsonTree.deployCanisters', () => {
-        runCommand('dfx deploy', 'Deploying canisters...', undefined, outputChannel);
+        runCommand('dfx deploy', 'Deploying canisters...', undefined, outputChannel, jsonTreeCandidProvider);
     });
     vscode.commands.registerCommand('jsonTree.openJson', openJson);
     vscode.commands.registerCommand('jsonTree.showCanisterGroupActions', showCanisterGroupActions);
@@ -48,9 +49,16 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
             candidUIWebviewSidebarProvider.emptyWebview();
             startCandidSync(outputChannel, context.extensionPath);
         }
-        candidUIWebviewSidebarProvider.refreshWebview(item);
+        candidUIWebviewSidebarProvider.refreshWebviewForJsonTreeItem(item);
     });
 
+    vscode.commands.registerCommand('dfx.openCandidUISidebarFromJsonTree', (canisterId: string) => {
+        if (!getCandidUIDeployed()) {
+            candidUIWebviewSidebarProvider.emptyWebview();
+            startCandidSync(outputChannel, context.extensionPath);
+        }
+        candidUIWebviewSidebarProvider.refreshWebviewForCanisterId(canisterId);
+    });
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {
