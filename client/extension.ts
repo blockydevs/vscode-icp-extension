@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const rootPath = vscode.workspace.rootPath;
     const treeDataProvider = new JsonTreeProvider(rootPath);
-    const candidUIWebviewProvider = new CandidUIWebviewProvider(rootPath, context.extensionPath);
+    const candidUIWebviewProvider = new CandidUIWebviewProvider(rootPath, context.extensionPath, context.extensionUri);
     const candidUIWebviewSidebarProvider = new CandidUIWebviewSidebarProvider(context.extensionUri, rootPath, context.extensionPath);
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
 

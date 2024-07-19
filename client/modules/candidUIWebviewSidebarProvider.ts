@@ -11,17 +11,18 @@ export class CandidUIWebviewSidebarProvider extends CandidUIProvider implements 
 
 
 	constructor(
-		private readonly _extensionUri: vscode.Uri,
+		protected readonly extensionUri: vscode.Uri,
 		protected workspaceRoot: string | undefined, 
 		protected extensionPath : string
 	) { 
-		super(workspaceRoot, extensionPath);
-		this._extensionUri = _extensionUri;
+		super(workspaceRoot, extensionPath, extensionUri);
 	}
 
 	public emptyWebview() {
 		if (this._view) {
-			this._view.webview.html = this.getEmptyWebviewContent();
+			const stylesPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'public', 'styles', 'styles-logs.css');
+        	const stylesUri = this._view.webview.asWebviewUri(stylesPathOnDisk);
+			this._view.webview.html = this.getEmptyWebviewContent(stylesUri);
 		}
 	}
 

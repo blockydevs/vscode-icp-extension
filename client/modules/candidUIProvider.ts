@@ -11,10 +11,12 @@ export class CandidUIProvider {
     protected candidFileData: any;
     protected jsonFilePath: string;
     protected candidFilePath: string;
+    protected _extensionUri: vscode.Uri
 
-	constructor (protected workspaceRoot: string | undefined, protected extensionPath : string) {
+	constructor (protected workspaceRoot: string | undefined, protected extensionPath : string, protected extensionUri: vscode.Uri) {
         this.jsonFilePath = path.join(this.workspaceRoot!, '.dfx', 'local', 'canister_ids.json');
         this.candidFilePath = path.join(this.extensionPath!, 'tools', 'ui', '.dfx', 'local', 'canister_ids.json');
+        this._extensionUri = extensionUri;
         this.refresh();
     }
 
@@ -71,8 +73,15 @@ export class CandidUIProvider {
                     </html>`
     }
 
-    protected getEmptyWebviewContent() {
+    protected getEmptyWebviewContent(stylesUri: vscode.Uri) {
         return `<!DOCTYPE html>
+                    <head>
+                        <link href="${stylesUri}" rel="stylesheet" />
+                        <style>
+                            #logs { white-space: pre-wrap; padding: 10px; border-radius: 5px; }
+                            a { text-decoration: underline; }
+                        </style>
+                    </head>
                     <html lang="en"">
                         <head>
                             <meta charset="UTF-8">

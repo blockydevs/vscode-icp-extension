@@ -3,8 +3,8 @@ import { JsonTreeItem } from './jsonTreeProvider';
 import { CandidUIProvider } from './candidUIProvider';
 
 export class CandidUIWebviewProvider extends CandidUIProvider {
-	constructor (protected workspaceRoot: string | undefined, protected extensionPath : string) {
-        super(workspaceRoot, extensionPath);
+	constructor (protected workspaceRoot: string | undefined, protected extensionPath : string, protected extensionUri: vscode.Uri) {
+        super(workspaceRoot, extensionPath, extensionUri);
     }
 
     createWebViewPanel(item: JsonTreeItem) : void {
@@ -65,8 +65,9 @@ export class CandidUIWebviewProvider extends CandidUIProvider {
                     { webviewPort: CandidUIProvider.WEBVIEW_PORT, extensionHostPort: 8000}
                 ]
             });
-
-        panel.webview.html = this.getEmptyWebviewContent();
+        const stylesPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'public', 'styles', 'styles-logs.css');
+        const stylesUri = panel.webview.asWebviewUri(stylesPathOnDisk);
+        panel.webview.html = this.getEmptyWebviewContent(stylesUri);
         return panel;
     }
 }
