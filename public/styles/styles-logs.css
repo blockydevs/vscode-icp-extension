@@ -1,0 +1,5 @@
+body {
+	background-color: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
+	font-family: Arial, sans-serif;
+}

@@ -19,11 +19,17 @@ export class CandidUIWebviewSidebarProvider extends CandidUIProvider implements 
 		this._extensionUri = _extensionUri;
 	}
 
+	public emptyWebview() {
+		if (this._view) {
+			this._view.webview.html = this.getEmptyWebviewContent();
+		}
+	}
+
 	public refreshWebview(item?: JsonTreeItem) {
 		this._item = item;
 		this.refresh();
 		if (this._view) {
-			this._view.webview.html = this.createWebViewPanel();
+			this._view.webview.html = this.createWebviewPanel();
 		}
 	}
 
@@ -43,10 +49,10 @@ export class CandidUIWebviewSidebarProvider extends CandidUIProvider implements 
 			]
 		};
 
-		webviewView.webview.html = this.createWebViewPanel();
+		webviewView.webview.html = this.createWebviewPanel();
 	}
 
-	createWebViewPanel() : string {
+	createWebviewPanel() : string {
 		if (!this._item) {
 			return `<!DOCTYPE html>
                     <html lang="en"">
@@ -70,14 +76,6 @@ export class CandidUIWebviewSidebarProvider extends CandidUIProvider implements 
             let canisterCandidUI = this.getCanisterId(this.candidFileData, CandidUIProvider.CANDID_CANISTER_NAME);
             let canisterId = this.getCanisterId(this.jsonData, itemKey);
             if (canisterCandidUI && canisterId) {
-                const panel = vscode.window.createWebviewPanel('dfx.candidUIPreview', 'Candid UI', vscode.ViewColumn.One,
-                    {
-                        enableScripts: true,
-                        portMapping: [
-                            { webviewPort: CandidUIProvider.WEBVIEW_PORT, extensionHostPort: 8000}
-                        ]
-                    });
-
                 return this.getWebviewContent(canisterCandidUI, canisterId);
             }
             else {

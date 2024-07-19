@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import * as path from 'path';
+import {setCandidUIDeployed} from './globalVariables'
 
 export function startCandid(outputChannel: vscode.OutputChannel, extensionPath: string) {
     outputChannel.show(true);
@@ -24,4 +25,18 @@ export function startCandid(outputChannel: vscode.OutputChannel, extensionPath: 
     candidProcess.on('close', (code) => {
         outputChannel.appendLine(`Candid UI process exited with code ${code}`);
     });
+
+    setCandidUIDeployed(true);
+}
+
+export function startCandidSync(outputChannel: vscode.OutputChannel, extensionPath: string) {
+    outputChannel.show(true);
+    outputChannel.appendLine(`Starting Candid UI ...`);
+    
+    const command = `dfx deploy`;
+    const candidProcess = execSync(command, { cwd: path.join(extensionPath, 'tools', 'ui') });
+
+    outputChannel.append(candidProcess.toString('utf-8'));
+
+    setCandidUIDeployed(true);
 }
