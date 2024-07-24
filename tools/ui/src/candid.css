@@ -53,6 +53,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
+}
+
+#header button {
+  min-width: 5rem;
 }
 
 #title-card {
@@ -500,6 +505,14 @@ input[type="checkbox"] ~ .popup-form {
   .button-container {
     justify-content: flex-end;
   }
+
+  #header {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    height: unset;
+    padding: 0.5rem;
+  }
 }
 
 @media only screen and (min-width: 800px) {
@@ -512,6 +525,10 @@ input[type="checkbox"] ~ .popup-form {
     text-align: left;
     padding-left: 3rem;
     padding-right: 1rem;
+  }
+
+  #header button {
+    min-width: 5rem;
   }
 
   #container {
@@ -592,12 +609,21 @@ input[type="checkbox"] ~ .popup-form {
     flex: 0;
     font-size: 4rem;
     padding: 0.8rem;
+    border: 1px solid var(--vscode-button-hoverBackground);
+  }
+  #console-bar button:hover {
+    background-color: var(--vscode-button-hoverBackground);
   }
 }
 
 #console-bar button {
   background-color: var(--vscode-button-secondaryBackground);
   color: var(--vscode-button-secondaryForeground);
+  border: 1px solid var(--vscode-button-hoverBackground);
+}
+
+#console-bar button:hover {
+  background-color: var(--vscode-button-hoverBackground);
 }
 
 ::-webkit-scrollbar {
