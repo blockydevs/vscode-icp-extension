@@ -609,27 +609,21 @@ input[type="checkbox"] ~ .popup-form {
     flex: 0;
     font-size: 4rem;
     padding: 0.8rem;
-<<<<<<< HEAD
     border: 1px solid var(--vscode-button-hoverBackground);
   }
   #console-bar button:hover {
     background-color: var(--vscode-button-hoverBackground);
-=======
->>>>>>> develop
   }
 }
 
 #console-bar button {
   background-color: var(--vscode-button-secondaryBackground);
   color: var(--vscode-button-secondaryForeground);
-<<<<<<< HEAD
   border: 1px solid var(--vscode-button-hoverBackground);
 }
 
 #console-bar button:hover {
   background-color: var(--vscode-button-hoverBackground);
-=======
->>>>>>> develop
 }
 
 ::-webkit-scrollbar {
