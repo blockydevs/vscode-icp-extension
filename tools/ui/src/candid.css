@@ -127,6 +127,7 @@ input:focus,
 #methods input,
 #methods button {
   border: 1px solid var(--vscode-input-border);
+  padding: 4px;
 }
 
 #methods button {
@@ -227,7 +228,8 @@ input[type="checkbox"] ~ .popup-form {
 }
 
 .mutable-method-btn {
-  background-color: var(--vscode-button-hoverBackground) !important;
+  background-color: var(--vscode-extensionButton-background) !important;
+  color: var(--vscode-extensionButton-foreground) !important;
 }
 
 .btn::after {
@@ -476,13 +478,14 @@ input[type="checkbox"] ~ .popup-form {
   align-items: center;
   font-size: 32px;
   cursor: pointer;
+  transform: rotate(180deg);
 }
 .accordion .accordion__header .toggler svg {
   fill: var(--vscode-editor-foreground) !important;
 }
 
 .accordion--expand .accordion__header .toggler {
-  transform: rotate(180deg);
+  transform: rotate(0);
 }
 .accordion .accordion__body {
   overflow: hidden;
@@ -569,13 +572,6 @@ input[type="checkbox"] ~ .popup-form {
     border-bottom: none;
     border-left: 1px solid var(--light);
   }
-  #console-bar button {
-    flex: 0;
-    font-size: 4rem;
-    padding: 0.8rem;
-    background-color: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
-  }
 
   .console-header {
     display: none;
@@ -613,21 +609,27 @@ input[type="checkbox"] ~ .popup-form {
     flex: 0;
     font-size: 4rem;
     padding: 0.8rem;
+<<<<<<< HEAD
     border: 1px solid var(--vscode-button-hoverBackground);
   }
   #console-bar button:hover {
     background-color: var(--vscode-button-hoverBackground);
+=======
+>>>>>>> develop
   }
 }
 
 #console-bar button {
   background-color: var(--vscode-button-secondaryBackground);
   color: var(--vscode-button-secondaryForeground);
+<<<<<<< HEAD
   border: 1px solid var(--vscode-button-hoverBackground);
 }
 
 #console-bar button:hover {
   background-color: var(--vscode-button-hoverBackground);
+=======
+>>>>>>> develop
 }
 
 ::-webkit-scrollbar {

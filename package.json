@@ -84,6 +84,10 @@
           "name": "Motoko"
         },
         {
+          "id": "jsonTreeCandid",
+          "name": "Deployed canisters"
+        },
+        {
           "type": "webview",
           "id": "dfx.candidUISidebar",
           "name": "Candid UI"
@@ -129,6 +133,10 @@
       },
       {
         "command": "dfx.openCandidUISidebar",
+        "title": "Open Candid UI in sidebar"
+      },
+      {
+        "command": "dfx.openCandidUISidebarFromJsonTree",
         "title": "Open Candid UI in sidebar"
       }
     ],

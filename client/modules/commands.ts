@@ -1,41 +1,64 @@
 import * as vscode from 'vscode';
 import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
+import { JsonTreeCandidProvider } from './jsonTreeCandidProvider';
 import { runCommand, viewLogs } from './logsManager';
 import { startReplica } from './replicaManager';
-import { startCandid } from './candidManager';
+import { startCandid, startCandidSync } from './candidManager';
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
+import { getCandidUIDeployed } from './globalVariables';
 
-export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, 
+export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, jsonTreeCandidProvider: JsonTreeCandidProvider,
                                  candidUIWebviewProvider: CandidUIWebviewProvider, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider,
                                  outputChannel: vscode.OutputChannel) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(CandidUIWebviewSidebarProvider.viewType, candidUIWebviewSidebarProvider));
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
-        runCommand(`dfx deploy ${item.label.split(':')[0]}`, `Deploying canister: ${item.label}`, item.label, outputChannel);
+        runCommand(`dfx deploy ${item.label.split(':')[0]}`, `Deploying canister: ${item.label}`, item.label, outputChannel, jsonTreeCandidProvider);
     });
     vscode.commands.registerCommand('jsonTree.startReplica', () => {
         startReplica(outputChannel);
     });
     vscode.commands.registerCommand('jsonTree.deployCanisters', () => {
-        runCommand('dfx deploy', 'Deploying canisters...', undefined, outputChannel);
+        runCommand('dfx deploy', 'Deploying canisters...', undefined, outputChannel, jsonTreeCandidProvider);
     });
     vscode.commands.registerCommand('jsonTree.openJson', openJson);
     vscode.commands.registerCommand('jsonTree.showCanisterGroupActions', showCanisterGroupActions);
     vscode.commands.registerCommand('jsonTree.showCanisterActions', showCanisterActions);
-    vscode.commands.registerCommand('jsonTree.viewLogs', viewLogs);
+    vscode.commands.registerCommand('jsonTree.viewLogs', (item: JsonTreeItem) => {
+        viewLogs(item, context.extensionUri);
+    });
     vscode.commands.registerCommand('dfx.startCandid', () => {
         startCandid(outputChannel, context.extensionPath);  
     });
     vscode.commands.registerCommand('dfx.openCandidUI', (item: JsonTreeItem) => {
-        candidUIWebviewProvider.refresh();
-        candidUIWebviewProvider.createWebViewPanel(item);
+        if (!getCandidUIDeployed()) {
+            let panel = candidUIWebviewProvider.createEmptyWebview();
+            startCandidSync(outputChannel, context.extensionPath);
+            candidUIWebviewProvider.refresh();
+            candidUIWebviewProvider.updateWebviewHtml(item, panel)
+        }
+        else {
+            candidUIWebviewProvider.refresh();
+            candidUIWebviewProvider.createWebViewPanel(item);
+        }
     });
     vscode.commands.registerCommand('dfx.openCandidUISidebar', (item: JsonTreeItem) => {
-        candidUIWebviewSidebarProvider.refreshWebview(item);
+        if (!getCandidUIDeployed()) {
+            candidUIWebviewSidebarProvider.emptyWebview();
+            startCandidSync(outputChannel, context.extensionPath);
+        }
+        candidUIWebviewSidebarProvider.refreshWebviewForJsonTreeItem(item);
     });
 
+    vscode.commands.registerCommand('dfx.openCandidUISidebarFromJsonTree', (canisterId: string) => {
+        if (!getCandidUIDeployed()) {
+            candidUIWebviewSidebarProvider.emptyWebview();
+            startCandidSync(outputChannel, context.extensionPath);
+        }
+        candidUIWebviewSidebarProvider.refreshWebviewForCanisterId(canisterId);
+    });
 }
 
 function openJson(filePath: string, keyPath: string, value: any) {

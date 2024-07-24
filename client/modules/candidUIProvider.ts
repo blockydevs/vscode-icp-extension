@@ -11,10 +11,12 @@ export class CandidUIProvider {
     protected candidFileData: any;
     protected jsonFilePath: string;
     protected candidFilePath: string;
+    protected _extensionUri: vscode.Uri
 
-	constructor (protected workspaceRoot: string | undefined, protected extensionPath : string) {
+	constructor (protected workspaceRoot: string | undefined, protected extensionPath : string, protected extensionUri: vscode.Uri) {
         this.jsonFilePath = path.join(this.workspaceRoot!, '.dfx', 'local', 'canister_ids.json');
         this.candidFilePath = path.join(this.extensionPath!, 'tools', 'ui', '.dfx', 'local', 'canister_ids.json');
+        this._extensionUri = extensionUri;
         this.refresh();
     }
 
@@ -39,16 +41,16 @@ export class CandidUIProvider {
         return `<!DOCTYPE html>
                     <html lang="en"">
                         <head>
-                        <meta charset="UTF-8">
+                            <meta charset="UTF-8">
                             <title>Candid UI</title>
                             <style>
                                 html { width: 100%; height: 100%; min-height: 100%; display: flex; }
                                 body { flex: 1; display: flex; }
                                 iframe { flex: 1; border: none; background: white; }
                             </style>
-                            </head>
-                            <body>
-                              <script>
+                        </head>
+                        <body>
+                            <script>
                                 function getAllStyles() {
                                     const styles = document.querySelector('html').getAttribute('style');
                                     return styles;
@@ -67,7 +69,27 @@ export class CandidUIProvider {
                                 const styles = getAllStyles();
                                 addStylesToIframe(styles);
                             </script>
-                            </body>
+                        </body>
+                    </html>`
+    }
+
+    protected getEmptyWebviewContent(stylesUri: vscode.Uri) {
+        return `<!DOCTYPE html>
+                    <head>
+                        <link href="${stylesUri}" rel="stylesheet" />
+                        <style>
+                            #logs { white-space: pre-wrap; padding: 10px; border-radius: 5px; }
+                            a { text-decoration: underline; }
+                        </style>
+                    </head>
+                    <html lang="en"">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>Candid UI</title>
+                        </head>
+                        <body>
+                            <p>Waiting for Candid UI deploy finish</p>
+                        </body>
                     </html>`
     }
 

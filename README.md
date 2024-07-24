@@ -6,35 +6,38 @@ This Visual Studio Code extension provides a specialized Language Server to help
 - **Autocomplete**: Helps users by suggesting possible completions for their input based on the schema.
 - **Validation**: Checks the `dfx.json` file against the provided schema and highlights any errors or inconsistencies.
 
-These features are powered by a schema located in `/server/src/dfx.json`.
+These features are powered by a schema located in `/server/dfx.json`.
 
 - **Canisters View**: A visual representation of the `dfx.json` file in a tree format, allowing easy navigation and interaction with canisters. The extension is activated from the side panel of Visual Studio Code.
 - **Canister Actions**: For each canister, you can perform various actions such as deploying the canister. You can also perform actions on all canisters collectively.
 
 ### Key Files and Directories
 
-- **client/src/extension.ts**: Responsible for starting the client and registering commands.
-- **server/src/server.ts**: Entry point for the Language Server, where the server is configured and started.
+- **client/extension.ts**: Responsible for starting the client and registering commands.
+- **server/server.ts**: Entry point for the Language Server, where the server is configured and started.
 - **package.json**: Contains metadata about the extension, including dependencies, activation events, and contributions to VS Code.
 - **modules/**: Contains helper modules for commands, global variables, dfx json provider, logs and replica management.
+- **tools/ui/**: Contains Candid UI source code acquired from [Dfinity Candid Implementation](https://github.com/dfinity/candid) with our changes for better visual experience in Visual Studio Code.
 
 ## How to Run
 
 To get started with the extension, follow these steps:
 
-1. **Install dependencies**: Run `npm install` in the root directory to install all necessary npm modules for both the client and server.
+1. **Install dependencies**: Run `npm install` in the root directory to install all necessary npm modules for the client, server and tools/ui packages.
 
-2. **Compile the project**:
-   - Press `Ctrl+Shift+B` to start compiling the client and server in watch mode. This will automatically recompile the project whenever you make changes.
+2. **Build the project**:
+   - Run `npm run build` to build project and put sources of client and server to target directory `build` and also build necessary Candid UI packages.
 
 3. **Launch the extension**:
    - Switch to the Run and Debug View in the Sidebar (`Ctrl+Shift+D`).
-   - Select `Launch Client` from the dropdown menu.
+   - Select `Launch Extension` from the dropdown menu.
    - Press `▷` (or `F5`) to run the launch configuration.
 
 4. **Test the extension**:
    - In the new instance of VS Code that opens (known as the Extension Development Host), open a document with a `.json` extension.
    - You should see validation errors and autocomplete suggestions specific to `dfx.json` files.
+   - You can also start local replica, deploy canisters based on `dfx.json` definitions and by selecting option of deploying Candid UI 
+   also launch Candid UI for selected canister in webview.
 
 ## Pack to one file and Run Local
 To use this VS Code extension locally without publishing it to the Marketplace, follow these steps:
@@ -76,6 +79,10 @@ The extension comes with several built-in commands to manage and interact with `
    - **Use Case**: When you want to deploy all canisters defined in the `dfx.json` file.
    - **Action**: Select "Deploy Canisters" from the options menu to deploy all canisters at once.
 
+3. **Deploy Candid**:
+   - **Use Case**: When you want to use Candid UI to test deployed canister methods in webview in VS Code.
+   - **Action**: Select "Deploy Candid" from the options menu to deploy Candid UI canister.
+
 `Show Canister Actions`:
 
 1. **Deploy a Canister**:
@@ -85,6 +92,14 @@ The extension comes with several built-in commands to manage and interact with `
 2. **View Logs**:
    - **Use Case**: View logs for specific canister.
    - **Action**: Click on a canister and select "View Logs"
+
+3. **Open Candid UI**:
+   - **Use Case**: Open Candid UI in webview.
+   - **Action**: Click on a canister which has been deployed and select "Open Candid UI"
+
+4. **Open Candid UI in sidebar**:
+   - **Use Case**: Open Candid UI in webview in sidebar.
+   - **Action**: Click on a canister which has been deployed and select "Open Candid UI in sidebar"
   
 ## Using `dfx` with WSL in Visual Studio Code
 
