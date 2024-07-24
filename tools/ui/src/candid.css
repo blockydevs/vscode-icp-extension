@@ -609,8 +609,6 @@ input[type="checkbox"] ~ .popup-form {
   #methods-list {
     height: calc(100vh - (var(--header-height) * 2));
   }
-<<<<<<< Updated upstream
-=======
   #console-bar button {
     flex: 0;
     font-size: 4rem;
@@ -652,5 +650,4 @@ input[type="checkbox"] ~ .popup-form {
 
 ::-webkit-scrollbar-thumb:active {
   background: var(--vscode-scrollbarSlider-activeBackground);
->>>>>>> Stashed changes
 }
