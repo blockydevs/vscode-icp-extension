@@ -6,6 +6,7 @@ import {
 import {Principal} from '@dfinity/principal'
 import './candid.css';
 import { AuthClient } from "@dfinity/auth-client";
+import { Secp256k1KeyIdentity } from './identity-secp256k1/secp256k1';
 import { Accordion } from './accordion';
 
 declare var flamegraph: any;
@@ -13,18 +14,12 @@ declare var d3: any;
 
 const names: Record<number,string> = {};
 
-function isKnownMainnet(agent: HttpAgent) {
-  // @ts-ignore
-  const hostname = agent._host.hostname;
-  return hostname.endsWith('.icp0.io') || hostname.endsWith('.ic0.app');
-}
+
 
 export let authClient: AuthClient | undefined;
 
 const agent = new HttpAgent();
-if (!isKnownMainnet(agent)) {
-  agent.fetchRootKey();
-}
+agent.fetchRootKey();
 
 function getCanisterId(): Principal {
   // Check the query params.
@@ -49,7 +44,7 @@ function getCanisterId(): Principal {
   throw new Error("Could not find the canister ID.");
 }
 
-export async function fetchActor(canisterId: Principal): Promise<ActorSubclass> {
+export async function fetchActor(canisterId: Principal, identity: Secp256k1KeyIdentity): Promise<ActorSubclass> {
   let js;
   const maybeDid = new URLSearchParams(window.location.search).get(
     "did"
@@ -87,15 +82,12 @@ export async function fetchActor(canisterId: Principal): Promise<ActorSubclass> 
       disableIdle: true,
       disableDefaultIdleCallback: true,
     },
-  }))
-  if (await authClient.isAuthenticated()) {
-    agent.replaceIdentity(authClient.getIdentity());
-    console.log("Authenticated with Internet Identity Principal")
-    console.log(authClient.getIdentity().getPrincipal().toString())
-  }
+  }));
+  agent.replaceIdentity(identity);
 
   return Actor.createActor(candid.idlFactory, { agent, canisterId });
 }
+
 
 export function getProfilerActor(canisterId: Principal): ActorSubclass {
   const profiler_interface: IDL.InterfaceFactory = ({ IDL }) => IDL.Service({
