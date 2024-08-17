@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
 import { JsonTreeCandidProvider } from './jsonTreeCandidProvider';
 import { runCommand, viewLogs } from './logsManager';
 import { startReplica } from './replicaManager';
-import { startCandid, startCandidSync } from './candidManager';
+import { startCandid, startCandidAndOpenWebview, startCandidAndOpenWebviewSidebarForJsonTreeItem, startCandidAndOpenWebviewSidebarForCanisterId } from './candidManager';
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
-import { getCandidUIDeployed } from './globalVariables';
+import { canisterStatusCheck } from './canisterStatusCheck';
 
 export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, jsonTreeCandidProvider: JsonTreeCandidProvider,
                                  candidUIWebviewProvider: CandidUIWebviewProvider, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider,
@@ -33,11 +34,9 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
         startCandid(outputChannel, context.extensionPath);  
     });
     vscode.commands.registerCommand('dfx.openCandidUI', (item: JsonTreeItem) => {
-        if (!getCandidUIDeployed()) {
+        if (!canisterStatusCheck(path.join(context.extensionPath, 'tools', 'ui'))) {
             let panel = candidUIWebviewProvider.createEmptyWebview();
-            startCandidSync(outputChannel, context.extensionPath);
-            candidUIWebviewProvider.refresh();
-            candidUIWebviewProvider.updateWebviewHtml(item, panel)
+            startCandidAndOpenWebview(outputChannel, context.extensionPath, candidUIWebviewProvider, item, panel);
         }
         else {
             candidUIWebviewProvider.refresh();
@@ -45,19 +44,23 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
         }
     });
     vscode.commands.registerCommand('dfx.openCandidUISidebar', (item: JsonTreeItem) => {
-        if (!getCandidUIDeployed()) {
+        if (!canisterStatusCheck(path.join(context.extensionPath, 'tools', 'ui'))) {
             candidUIWebviewSidebarProvider.emptyWebview();
-            startCandidSync(outputChannel, context.extensionPath);
+            startCandidAndOpenWebviewSidebarForJsonTreeItem(outputChannel, context.extensionPath, candidUIWebviewSidebarProvider, item);
         }
-        candidUIWebviewSidebarProvider.refreshWebviewForJsonTreeItem(item);
+        else {
+            candidUIWebviewSidebarProvider.refreshWebviewForJsonTreeItem(item);
+        }
     });
 
     vscode.commands.registerCommand('dfx.openCandidUISidebarFromJsonTree', (canisterId: string) => {
-        if (!getCandidUIDeployed()) {
+        if (!canisterStatusCheck(path.join(context.extensionPath, 'tools', 'ui'))) {
             candidUIWebviewSidebarProvider.emptyWebview();
-            startCandidSync(outputChannel, context.extensionPath);
+            startCandidAndOpenWebviewSidebarForCanisterId(outputChannel, context.extensionPath, candidUIWebviewSidebarProvider, canisterId);
         }
-        candidUIWebviewSidebarProvider.refreshWebviewForCanisterId(canisterId);
+        else {
+            candidUIWebviewSidebarProvider.refreshWebviewForCanisterId(canisterId);
+        }
     });
 }
 

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { canisterStatusCheckWithCanisterId } from './canisterStatusCheck';
 
 export class JsonTreeCandidProvider implements vscode.TreeDataProvider<JsonTreeCandidItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<JsonTreeCandidItem | undefined | void> = new vscode.EventEmitter<JsonTreeCandidItem | undefined | void>();
@@ -37,13 +38,13 @@ export class JsonTreeCandidProvider implements vscode.TreeDataProvider<JsonTreeC
     }
 
     private getJsonTreeCandidItems(obj: any): JsonTreeCandidItem[] {
-        return Object.keys(obj).filter(key => key && key !== '__Candid_UI').map(key => {
-            const value = obj[key]?.local;
+        return Object.keys(obj).filter(key => key && key !== '__Candid_UI' && this.workspaceRoot && canisterStatusCheckWithCanisterId(this.workspaceRoot, obj[key]?.local)).map(key => {
+            const canisterId = obj[key]?.local;
             const collapsibleState = vscode.TreeItemCollapsibleState.None;
             const command = {
                 command: 'dfx.openCandidUISidebarFromJsonTree',
                 title: 'Open Candid UI in sidebar',
-                arguments: [value]
+                arguments: [canisterId]
             };
             return new JsonTreeCandidItem(key, collapsibleState, `Open Candid UI for canister ${key}`, command);
         });
