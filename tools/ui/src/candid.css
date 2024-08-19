@@ -71,7 +71,7 @@ body {
   letter-spacing: 0.1rem;
 }
 
-#methods {
+.card {
   font-family: "Vremena Grotesk", "Roboto Mono", monospace;
   margin: 1.8rem 1.8rem 1.8rem 0;
   padding: 2rem;
@@ -646,4 +646,110 @@ input[type="checkbox"] ~ .popup-form {
 
 ::-webkit-scrollbar-thumb:active {
   background: var(--vscode-scrollbarSlider-activeBackground);
+}
+
+/* LOGIN POPOVER */
+.popover__wrapper {
+  display: inline-block;
+}
+.popover__content {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--vscode-editor-background);
+  border: 1px var(--vscode-editor-foreground) solid;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+  width: auto;
+  max-width: 80vw;
+}
+
+.popover__wrapper-active,
+.popover__content-active {
+  z-index: 10 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.popover__message {
+  text-align: center;
+}
+
+/* IDENTITIES */
+
+#identities {
+  max-width: 200px;
+  width: 100%;
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-editor-background);
+}
+
+.identities {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+.identities .entry {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.identities .entry .entry__input {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+}
+
+.identities input,
+.identities button,
+.identities input:focus,
+.identities button:active {
+  outline: 1px solid var(--vscode-button-border);
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-editor-foreground);
+}
+
+.identities input,
+.identities button {
+  border: 1px solid var(--vscode-input-border);
+  padding: 4px;
+}
+
+.identities button {
+  white-space: nowrap;
+}
+
+.identities input {
+  width: 100px;
+}
+
+.identities-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.identities-label {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 5px 0 0;
+  width: 200px;
+}
+
+.identities-label svg {
+  width: 15px;
+  fill: var(--vscode-editor-foreground);
+}
+.identities-label svg:hover {
+  fill: var(--vscode-button-hoverBackground);
+  cursor: pointer;
 }
