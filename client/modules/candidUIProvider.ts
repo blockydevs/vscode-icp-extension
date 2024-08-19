@@ -59,6 +59,7 @@ export class CandidUIProvider {
                                 function addStylesToIframe(styles) {
                                     const body = document.querySelector('body');
                                     const iframe = document.createElement('iframe');
+                                    iframe.allow = "clipboard-read; clipboard-write";
                                     iframe.src = "http://localhost:${CandidUIProvider.WEBVIEW_PORT}/?canisterId=${canisterCandidUI}&id=${canisterId}";
                                     iframe.onload = function() {
                                         iframe.contentWindow.postMessage(styles, "*");

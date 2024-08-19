@@ -2,15 +2,23 @@ import { fetchActor, render, getCycles, getNames } from "./candid";
 import { renderAuth } from "./auth/auth";
 import { Principal } from "@dfinity/principal";
 import { ActorSubclass } from "@dfinity/agent";
-import { Secp256k1KeyIdentity } from "./identity-secp256k1/secp256k1"
-import { addEventHandlersToNewIdentitiesButtons } from "./identities"
+import { Secp256k1KeyIdentity } from "./identity-secp256k1/secp256k1";
+import {
+  addEventHandlersToNewIdentitiesButtons,
+  addCopyToClipBoardListener,
+  addOpenIdentitiesPopoverListener,
+  addCloseIdentitiesPopoverListener,
+  shortenAddress,
+} from "./identities";
 
 const DEFAULT_IDENTITY_ACCOUNTS_NUMBER = 10;
-export const DEFAULT_SEED_PHRASE = "during nut robust trouble drip question series endless hurry upper track cost time bone crunch gorilla cause peasant fantasy prison banana toy toward mean";
-export const DERIVATION_PATH = "m/44'/223'/0'/0/"
+export const DEFAULT_SEED_PHRASE =
+  "during nut robust trouble drip question series endless hurry upper track cost time bone crunch gorilla cause peasant fantasy prison banana toy toward mean";
+export const DERIVATION_PATH = "m/44'/223'/0'/0/";
 let actor: ActorSubclass | undefined;
 export let identities: Array<Secp256k1KeyIdentity> = new Array();
-export let selectedIdentity: Secp256k1KeyIdentity = Secp256k1KeyIdentity.generate();
+export let selectedIdentity: Secp256k1KeyIdentity =
+  Secp256k1KeyIdentity.generate();
 
 async function main() {
   const params = new URLSearchParams(window.location.search);
@@ -51,6 +59,9 @@ async function main() {
     let identity = await populateIdentities(canisterId);
     actor = await fetchActor(canisterId, identity);
     await addEventHandlersToNewIdentitiesButtons();
+    addCopyToClipBoardListener();
+    addOpenIdentitiesPopoverListener();
+    addCloseIdentitiesPopoverListener();
     // If login button to Internet Identity is ever needed uncomment line below
     // await renderAuth();
     const names = await getNames(canisterId);
@@ -81,12 +92,16 @@ window.addEventListener("popstate", (event) => {
   }
 });
 
-async function populateIdentities(canisterId: Principal): Promise<Secp256k1KeyIdentity> {
+async function populateIdentities(
+  canisterId: Principal
+): Promise<Secp256k1KeyIdentity> {
   let identitiesEl = document.getElementById("identities");
-  identitiesEl?.addEventListener("change", async function() {
+  identitiesEl?.addEventListener("change", async function () {
     let value = (identitiesEl as HTMLInputElement).value;
-    if(value !== undefined) {
-      let identity = identities.filter(i => i.getPrincipal().toString() == value)[0];
+    if (value !== undefined) {
+      let identity = identities.filter(
+        (i) => i.getPrincipal().toString() == value
+      )[0];
       if (identity !== undefined) {
         selectedIdentity = identity;
         actor = await fetchActor(canisterId, selectedIdentity);
@@ -94,13 +109,21 @@ async function populateIdentities(canisterId: Principal): Promise<Secp256k1KeyId
     }
   });
   for (let i = 0; i < DEFAULT_IDENTITY_ACCOUNTS_NUMBER; i++) {
-    const identity = Secp256k1KeyIdentity.fromSeedPhraseWithDerivationPath(DEFAULT_SEED_PHRASE, DERIVATION_PATH + identities.length);
+    const identity = Secp256k1KeyIdentity.fromSeedPhraseWithDerivationPath(
+      DEFAULT_SEED_PHRASE,
+      DERIVATION_PATH + identities.length
+    );
     identities.push(identity);
-    identitiesEl?.appendChild(new Option(identity.getPrincipal().toString(), identity.getPrincipal().toString()));
+    identitiesEl?.appendChild(
+      new Option(
+        `${i + 1}. ${shortenAddress(identity.getPrincipal().toString())}`,
+        identity.getPrincipal().toString()
+      )
+    );
   }
   return identities[0];
 }
 
 export async function refresh_actor(canisterId: Principal) {
   actor = await fetchActor(canisterId, selectedIdentity);
-};
+}
