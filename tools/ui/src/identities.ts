@@ -72,7 +72,7 @@ function addFromPrivateKey(privateKey: string) {
     "identities"
   ) as HTMLSelectElement | null;
   const identity = Secp256k1KeyIdentity.fromSecretKey(
-    Buffer.from(privateKeyParsed, "base64")
+    Buffer.from(privateKeyParsed, "base64").subarray(7, 39)
   );
   const currentLength = identitiesEl?.length || 0;
 

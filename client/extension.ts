@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
     vscode.window.registerTreeDataProvider('jsonTreeCandid', candidProvider);
 
-    const outputChannel = vscode.window.createOutputChannel("Motoko");
+    const outputChannel = vscode.window.createOutputChannel("ICP logs");
     context.subscriptions.push(outputChannel);
 
     // Set initial global variables
