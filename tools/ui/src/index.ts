@@ -108,6 +108,9 @@ async function populateIdentities(
       }
     }
   });
+
+  identitiesEl?.appendChild(new Option(`0. anonymous`, ""));
+
   for (let i = 0; i < DEFAULT_IDENTITY_ACCOUNTS_NUMBER; i++) {
     const identity = Secp256k1KeyIdentity.fromSeedPhraseWithDerivationPath(
       DEFAULT_SEED_PHRASE,
