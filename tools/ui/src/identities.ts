@@ -38,7 +38,7 @@ function addNewIdentity() {
   identities.push(identity);
   identitiesEl?.appendChild(
     new Option(
-      `${currentLength + 1}. ${shortenAddress(
+      `${currentLength}. ${shortenAddress(
         identity.getPrincipal().toString()
       )}`,
       identity.getPrincipal().toString()
@@ -57,7 +57,7 @@ function addFromSeedPhrase(seedPhrase: string | string[]) {
   identities.push(identity);
   identitiesEl?.appendChild(
     new Option(
-      `${currentLength + 1}. ${shortenAddress(
+      `${currentLength}. ${shortenAddress(
         identity.getPrincipal().toString()
       )}`,
       identity.getPrincipal().toString()
@@ -81,7 +81,7 @@ function addFromPrivateKey(privateKey: string) {
   identities.push(identity);
   identitiesEl?.appendChild(
     new Option(
-      `${currentLength + 1}. ${shortenAddress(
+      `${currentLength}. ${shortenAddress(
         identity.getPrincipal().toString()
       )}`,
       identity.getPrincipal().toString()
