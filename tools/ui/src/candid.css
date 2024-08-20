@@ -753,3 +753,10 @@ input[type="checkbox"] ~ .popup-form {
   fill: var(--vscode-button-hoverBackground);
   cursor: pointer;
 }
+
+#toast-container {
+  color: var(--vscode-terminal-ansiGreen);
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

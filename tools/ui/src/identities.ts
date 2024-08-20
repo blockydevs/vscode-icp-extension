@@ -44,6 +44,7 @@ function addNewIdentity() {
       identity.getPrincipal().toString()
     )
   );
+  addIdentitySuccessAction();
 }
 
 function addFromSeedPhrase(seedPhrase: string | string[]) {
@@ -62,6 +63,7 @@ function addFromSeedPhrase(seedPhrase: string | string[]) {
       identity.getPrincipal().toString()
     )
   );
+  addIdentitySuccessAction();
 }
 
 function addFromPrivateKey(privateKey: string) {
@@ -85,6 +87,7 @@ function addFromPrivateKey(privateKey: string) {
       identity.getPrincipal().toString()
     )
   );
+  addIdentitySuccessAction();
 }
 
 export function shortenAddress(address: string) {
@@ -122,9 +125,29 @@ export function addOpenIdentitiesPopoverListener() {
 export function addCloseIdentitiesPopoverListener() {
   const closeIdentityBtn = document.getElementById("close-identities-form");
   closeIdentityBtn?.addEventListener("click", () => {
-    const popoverWrapper = document.querySelector(".popover__wrapper");
-    const popoverContent = document.querySelector(".popover__content");
-    popoverWrapper?.classList.remove("popover__wrapper-active");
-    popoverContent?.classList.remove("popover__content-active");
+    closePopover();
   });
+}
+
+export function closePopover() {
+  const popoverWrapper = document.querySelector(".popover__wrapper");
+  const popoverContent = document.querySelector(".popover__content");
+  popoverWrapper?.classList.remove("popover__wrapper-active");
+  popoverContent?.classList.remove("popover__content-active");
+}
+
+export function displayIdentityToast() {
+  const toastContainer = document.getElementById("toast-container");
+  if (toastContainer) {
+    toastContainer.textContent = "Identity added!";
+
+    setTimeout(() => {
+      toastContainer.textContent = '';
+    }, 5000);
+  }
+}
+
+export function addIdentitySuccessAction() {
+  closePopover();
+  displayIdentityToast();
 }
