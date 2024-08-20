@@ -17,8 +17,7 @@ export const DEFAULT_SEED_PHRASE =
 export const DERIVATION_PATH = "m/44'/223'/0'/0/";
 let actor: ActorSubclass | undefined;
 export let identities: Array<Secp256k1KeyIdentity> = new Array();
-export let selectedIdentity: Secp256k1KeyIdentity =
-  Secp256k1KeyIdentity.generate();
+export let selectedIdentity: Secp256k1KeyIdentity | undefined;
 
 async function main() {
   const params = new URLSearchParams(window.location.search);
@@ -56,8 +55,8 @@ async function main() {
     document.title = `Canister ${cid}`;
     const canisterId = Principal.fromText(cid);
     const profiling = await getCycles(canisterId);
-    let identity = await populateIdentities(canisterId);
-    actor = await fetchActor(canisterId, identity);
+    await populateIdentities(canisterId);
+    actor = await fetchActor(canisterId);
     await addEventHandlersToNewIdentitiesButtons();
     addCopyToClipBoardListener();
     addOpenIdentitiesPopoverListener();
@@ -106,11 +105,18 @@ async function populateIdentities(
         selectedIdentity = identity;
         actor = await fetchActor(canisterId, selectedIdentity);
       }
+      else {
+        selectedIdentity = undefined;
+        actor = await fetchActor(canisterId);
+      }
     }
   });
-
-  identitiesEl?.appendChild(new Option(`0. anonymous`, ""));
-
+  identitiesEl?.appendChild(
+    new Option(
+      `0. anonymousUser`,
+      `anonymous`
+    )
+  );
   for (let i = 0; i < DEFAULT_IDENTITY_ACCOUNTS_NUMBER; i++) {
     const identity = Secp256k1KeyIdentity.fromSeedPhraseWithDerivationPath(
       DEFAULT_SEED_PHRASE,

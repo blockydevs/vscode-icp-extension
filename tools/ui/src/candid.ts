@@ -1,5 +1,5 @@
 import { EXTERNAL_CONFIG_PROMISE } from './external';
-import { Actor, HttpAgent, ActorSubclass, CanisterStatus } from '@dfinity/agent';
+import { Actor, HttpAgent, ActorSubclass, CanisterStatus, AnonymousIdentity } from '@dfinity/agent';
 import {
   IDL, InputBox, renderInput, renderValue
 } from '@dfinity/candid';
@@ -44,7 +44,7 @@ function getCanisterId(): Principal {
   throw new Error("Could not find the canister ID.");
 }
 
-export async function fetchActor(canisterId: Principal, identity: Secp256k1KeyIdentity): Promise<ActorSubclass> {
+export async function fetchActor(canisterId: Principal, identity?: Secp256k1KeyIdentity): Promise<ActorSubclass> {
   let js;
   const maybeDid = new URLSearchParams(window.location.search).get(
     "did"
@@ -77,13 +77,14 @@ export async function fetchActor(canisterId: Principal, identity: Secp256k1KeyId
   const dataUri = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(js);
   const candid: any = await eval('import("' + dataUri + '")');
 
+  
   authClient = authClient ?? (await AuthClient.create({
     idleOptions: {
       disableIdle: true,
       disableDefaultIdleCallback: true,
     },
   }));
-  agent.replaceIdentity(identity);
+  identity ? agent.replaceIdentity(identity) : agent.replaceIdentity(new AnonymousIdentity());
 
   return Actor.createActor(candid.idlFactory, { agent, canisterId });
 }
