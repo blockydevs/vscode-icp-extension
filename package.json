@@ -11,8 +11,14 @@
   },
   "dependencies": {
     "ajv": "^8.14.0",
+    "jsonc-parser": "^0.4.2",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
     "vscode-languageserver": "^9.0.1",
-    "vscode-languageserver-textdocument": "^1.0.11"
+    "vscode-languageserver-textdocument": "^1.0.11",
+    "vscode-languageclient": "^9.0.1",
+		"json-to-ast": "^2.1.0",
+    "jsonc-parser": "^0.4.2"
   },
   "keywords": [
     "vscode",
@@ -27,9 +33,17 @@
   },
   "homepage": "https://github.com/blockydevs/vscode-motoko#readme",
   "activationEvents": [
-    "onLanguage:plaintext"
+    "onLanguage:plaintext",
+    "onCommand:jsonTree.refreshEntry",
+    "onCommand:jsonTree.deployCanister",
+    "onCommand:jsonTree.startReplica",
+    "onCommand:jsonTree.deployCanisters",
+    "onCommand:jsonTree.openJson",
+    "onCommand:jsonTree.showCanisterGroupActions",
+    "onCommand:jsonTree.showCanisterActions",
+    "onView:calicoColors.colorsView"
   ],
-  "main": "./client/out/extension",
+  "main": "./build/client/extension.js",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -53,23 +67,136 @@
           "description": "Traces the communication between VS Code and the language server."
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "jsonTreeContainer",
+          "title": "Motoko",
+          "icon": "public/media/dep.svg"
+        }
+      ]
+    },
+    "views": {
+      "jsonTreeContainer": [
+        {
+          "id": "jsonTree",
+          "name": "Motoko"
+        },
+        {
+          "id": "jsonTreeCandid",
+          "name": "Deployed canisters"
+        },
+        {
+          "type": "webview",
+          "id": "dfx.candidUISidebar",
+          "name": "Candid UI"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "jsonTree.refreshEntry",
+        "title": "Refresh"
+      },
+      {
+        "command": "jsonTree.deployCanister",
+        "title": "Deploy Canister"
+      },
+      {
+        "command": "jsonTree.startReplica",
+        "title": "Start Replica"
+      },
+      {
+        "command": "jsonTree.deployCanisters",
+        "title": "Deploy Canisters"
+      },
+      {
+        "command": "jsonTree.openJson",
+        "title": "Open JSON"
+      },
+      {
+        "command": "jsonTree.showCanisterGroupActions",
+        "title": "Show Actions"
+      },
+      {
+        "command": "jsonTree.showCanisterActions",
+        "title": "Show Canister Actions"
+      },
+      {
+        "command": "dfx.startCandid",
+        "title": "Deploy Candid"
+      },
+      {
+        "command": "dfx.openCandidUI",
+        "title": "Open Candid UI"
+      },
+      {
+        "command": "dfx.openCandidUISidebar",
+        "title": "Open Candid UI in sidebar"
+      },
+      {
+        "command": "dfx.openCandidUISidebarFromJsonTree",
+        "title": "Open Candid UI in sidebar"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "jsonTree.refreshEntry",
+          "when": "view == jsonTree",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "jsonTree.showCanisterGroupActions",
+          "when": "viewItem == canisterGroup",
+          "group": "inline"
+        },
+        {
+          "command": "jsonTree.showCanisterActions",
+          "when": "viewItem == canister",
+          "group": "inline"
+        }
+      ]
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm install && tsc -b && cd ./tools/ui/ && npm run build",
+    "postinstall": "cd ./tools/ui && npm install",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-    "test": "sh ./scripts/e2e.sh"
+    "test": "sh ./scripts/e2e.sh",
+    "build": "tsc -b && cd ./tools/ui/ && npm run build"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.13",
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.14.6",
+    "@types/react": "^16.3.14",
+    "@types/react-dom": "^16.0.5",
+    "@types/vscode": "^1.73.0",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.57.0",
     "mocha": "^10.3.0",
-    "typescript": "^5.3.3"
-  }
+    "react-scripts": "^5.0.1",
+    "rewire": "^6.0.0",
+    "typescript": "^5.3.3",
+		"@vscode/test-electron": "^2.3.9"
+  },
+  "overrides": {
+    "react-scripts": {
+      "typescript": "^5"
+    }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+  
 }

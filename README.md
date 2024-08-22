@@ -1,33 +1,145 @@
-# LSP for dfx.json validation
+#  VSCODE MOTOKO
+## Overview
 
-Based on https://github.com/microsoft/vscode-extension-samples/tree/main/lsp-sample
+This Visual Studio Code extension provides a specialized Language Server to help developers working with `dfx.json` files. The main features of this extension include:
 
-## Functionality
+- **Autocomplete**: Helps users by suggesting possible completions for their input based on the schema.
+- **Validation**: Checks the `dfx.json` file against the provided schema and highlights any errors or inconsistencies.
 
-This Language Server works for dfx.json file. It has the following language features:
-- Autocomplete
-- Validation
-All based on schema provided in /server/src/dfx.json
+These features are powered by a schema located in `/server/dfx.json`.
 
-## Structure
+- **Canisters View**: A visual representation of the `dfx.json` file in a tree format, allowing easy navigation and interaction with canisters. The extension is activated from the side panel of Visual Studio Code.
+- **Canister Actions**: For each canister, you can perform various actions such as deploying the canister. You can also perform actions on all canisters collectively.
 
-```
-.
-├── client // Language Client
-│   ├── src
-│   │   ├── test // End to End tests for Language Client / Server
-│   │   └── extension.ts // Language Client entry point
-├── package.json // The extension manifest.
-└── server // Language Server
-    └── src
-        └── server.ts // Language Server entry point
-```
+### Key Files and Directories
 
-## How to run
+- **client/extension.ts**: Responsible for starting the client and registering commands.
+- **server/server.ts**: Entry point for the Language Server, where the server is configured and started.
+- **package.json**: Contains metadata about the extension, including dependencies, activation events, and contributions to VS Code.
+- **modules/**: Contains helper modules for commands, global variables, dfx json provider, logs and replica management.
+- **tools/ui/**: Contains Candid UI source code acquired from [Dfinity Candid Implementation](https://github.com/dfinity/candid) with our changes for better visual experience in Visual Studio Code.
 
-- Run `npm install` in this folder. This installs all necessary npm modules in both the client and server folder
-- Press Ctrl+Shift+B to start compiling the client and server in [watch mode](https://code.visualstudio.com/docs/editor/tasks#:~:text=The%20first%20entry%20executes,the%20HelloWorld.js%20file.).
-- Switch to the Run and Debug View in the Sidebar (Ctrl+Shift+D).
-- Select `Launch Client` from the drop down (if it is not already).
-- Press ▷ to run the launch config (F5).
-- In the [Extension Development Host](https://code.visualstudio.com/api/get-started/your-first-extension#:~:text=Then%2C%20inside%20the%20editor%2C%20press%20F5.%20This%20will%20compile%20and%20run%20the%20extension%20in%20a%20new%20Extension%20Development%20Host%20window.) instance of VSCode, open a document in with '.json' extension and validate document and see suggestions for autocomplete.
+## How to Run
+
+To get started with the extension, follow these steps:
+
+1. **Install dependencies**: Run `npm install` in the root directory to install all necessary npm modules for the client, server and tools/ui packages.
+
+2. **Build the project**:
+   - Run `npm run build` to build project and put sources of client and server to target directory `build` and also build necessary Candid UI packages.
+
+3. **Launch the extension**:
+   - Switch to the Run and Debug View in the Sidebar (`Ctrl+Shift+D`).
+   - Select `Launch Extension` from the dropdown menu.
+   - Press `▷` (or `F5`) to run the launch configuration.
+
+4. **Test the extension**:
+   - In the new instance of VS Code that opens (known as the Extension Development Host), open a document with a `.json` extension.
+   - You should see validation errors and autocomplete suggestions specific to `dfx.json` files.
+   - You can also start local replica, deploy canisters based on `dfx.json` definitions and by selecting option of deploying Candid UI 
+   also launch Candid UI for selected canister in webview.
+
+## Pack to one file and Run Local
+To use this VS Code extension locally without publishing it to the Marketplace, follow these steps:
+
+1. **Install `vsce` (Visual Studio Code Extension Manager) if you haven't already:**
+
+   ```sh
+   npm install -g vsce
+   ```
+2. Package the extension:
+
+   Navigate to your extension project directory and run:
+
+   ```sh
+   vsce package
+   ```
+
+3. Install the .vsix package in Visual Studio Code:
+
+- Open Visual Studio Code.
+- Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window or by pressing Ctrl+Shift+X.
+- Click on the three dots in the top right corner of the Extensions view.
+- Select Install from VSIX....
+- Browse to the .vsix file generated in step 2 and select it.
+- 
+## Example Use Cases
+  
+The extension comes with several built-in commands to manage and interact with `dfx.json` and related development tasks. These commands are executed through the context menu in the Canisters View.
+
+**Refresh**: When you have made changes to the `dfx.json` file outside of VS Code or through other processes and want to ensure the tree view is up-to-date.
+
+`canisters> Show Actions`:
+
+1. **Start the Replica**:
+   - **Use Case**: When you need to start the local Internet Computer (IC) replica to test your canisters.
+   - **Action**: Select "Start Replica" from the options menu to initiate the local IC instance.
+
+2. **Deploy All Canisters**:
+   - **Use Case**: When you want to deploy all canisters defined in the `dfx.json` file.
+   - **Action**: Select "Deploy Canisters" from the options menu to deploy all canisters at once.
+
+3. **Deploy Candid**:
+   - **Use Case**: When you want to use Candid UI to test deployed canister methods in webview in VS Code.
+   - **Action**: Select "Deploy Candid" from the options menu to deploy Candid UI canister.
+
+`Show Canister Actions`:
+
+1. **Deploy a Canister**:
+   - **Use Case**: When you have made changes to a specific canister and need to deploy it.
+   - **Action**: Click on the canister in the tree view and select "Deploy Canister"
+
+2. **View Logs**:
+   - **Use Case**: View logs for specific canister.
+   - **Action**: Click on a canister and select "View Logs"
+
+3. **Open Candid UI**:
+   - **Use Case**: Open Candid UI in webview.
+   - **Action**: Click on a canister which has been deployed and select "Open Candid UI"
+
+4. **Open Candid UI in sidebar**:
+   - **Use Case**: Open Candid UI in webview in sidebar.
+   - **Action**: Click on a canister which has been deployed and select "Open Candid UI in sidebar"
+
+`Deployed canisters`:
+
+This is a menu view which shows deployed canisters and by selecting one of it you can open Candid UI with selected deployed canister in sidebar.
+
+## Candid UI
+
+For running Candid UI in this extension we changed authentication functionality by removing authentitcating user in Internet Identity canister and instead we added set of 10 random identities in Candid UI which are ready to use. They are generated from the same seed phrase `during nut robust trouble drip question series endless hurry upper track cost time bone crunch gorilla cause peasant fantasy prison banana toy toward mean` and with changed derivation path for next ones. Also we added functions to expand this set which are
+
+1. **Add new identity** - adds new random identity from the seed phrase pasted above
+2. **New identity from seed phrase** - adds new identity from the seed phrase given by user
+3. **New identity from private key** - adds new identity from private key given by user
+
+
+  
+## Using `dfx` with WSL in Visual Studio Code
+
+To use `dfx` with Windows Subsystem for Linux (WSL) in Visual Studio Code, follow these steps:
+
+1. **Install and Set Up WSL:**
+
+   Ensure you have WSL installed and set up on your system. Follow the [official Microsoft guide](https://docs.microsoft.com/en-us/windows/wsl/install) if you haven't done this yet.
+
+2. **Install `dfx` in WSL:**
+
+   Open your WSL terminal and install `dfx` according to the [Internet Computer documentation](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/).
+
+3. **Open Visual Studio Code:**
+
+   Open Visual Studio Code on your Windows machine.
+
+4. **Connect to WSL:**
+
+   - Click on the green remote connection icon in the bottom left corner of the VS Code window.
+   - Select `Connect to WSL` from the dropdown menu.
+   - Choose your WSL distribution if prompted.
+
+5. **Access `dfx` commands in VS Code:**
+
+   Once connected to WSL, you will be able to run `dfx` commands directly from the integrated terminal in VS Code.
+
+   - Open a new terminal in VS Code by clicking on `Terminal` in the top menu and selecting `New Terminal`.
+   - Check `dfx --version` to verify the installation.

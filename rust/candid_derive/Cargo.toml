@@ -1,0 +1,26 @@
+[package]
+name = "candid_derive"
+version = "0.6.6"
+edition = "2021"
+rust-version.workspace = true
+authors = ["DFINITY Team"]
+description = "Macros implementation of #[derive(CandidType)] for the Candid."
+homepage = "https://docs.rs/candid_derive"
+documentation = "https://docs.rs/candid_derive"
+repository = "https://github.com/dfinity/candid"
+license = "Apache-2.0"
+readme = "README.md"
+
+categories = ["encoding", "wasm"]
+keywords = ["internet-computer", "idl", "candid", "dfinity", "parser"]
+include = ["src", "README.md", "Cargo.toml", "LICENSE"]
+
+[lib]
+name = "candid_derive"
+proc-macro = true
+
+[dependencies]
+quote = "1.0.7"
+syn = { version = "2.0", features = ["visit", "full"] }
+proc-macro2 = "1.0.19"
+lazy_static = "1.4.0"
