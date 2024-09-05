@@ -19,6 +19,10 @@ These features are powered by a schema located in `/server/dfx.json`.
 - **modules/**: Contains helper modules for commands, global variables, dfx json provider, logs and replica management.
 - **tools/ui/**: Contains Candid UI source code acquired from [Dfinity Candid Implementation](https://github.com/dfinity/candid) with our changes for better visual experience in Visual Studio Code.
 
+## Requirements
+
+1. **Visual Studio Code**: You need to have Visual Studio Code in version 1.75.0 or higher
+
 ## How to Run
 
 To get started with the extension, follow these steps:

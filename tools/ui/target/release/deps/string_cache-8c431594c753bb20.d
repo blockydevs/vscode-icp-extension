@@ -1,0 +1,11 @@
+/home/mm527/visual-studio-code/vscode-motoko/tools/ui/target/release/deps/libstring_cache-8c431594c753bb20.rmeta: /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/lib.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/atom.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/dynamic_set.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/static_sets.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/trivial_impls.rs
+
+/home/mm527/visual-studio-code/vscode-motoko/tools/ui/target/release/deps/libstring_cache-8c431594c753bb20.rlib: /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/lib.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/atom.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/dynamic_set.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/static_sets.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/trivial_impls.rs
+
+/home/mm527/visual-studio-code/vscode-motoko/tools/ui/target/release/deps/string_cache-8c431594c753bb20.d: /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/lib.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/atom.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/dynamic_set.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/static_sets.rs /home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/trivial_impls.rs
+
+/home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/lib.rs:
+/home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/atom.rs:
+/home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/dynamic_set.rs:
+/home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/static_sets.rs:
+/home/mm527/.cargo/registry/src/index.crates.io-6f17d22bba15001f/string_cache-0.8.7/src/trivial_impls.rs:
