@@ -1,107 +1,82 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
 import * as path from 'path';
 import { JsonTreeItem } from './jsonTreeProvider';
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
+import { canisterStatusCheck } from './canisterStatusCheck';
 
-export function startCandid(outputChannel: vscode.OutputChannel, extensionPath: string) {
-    outputChannel.show(true);
-    outputChannel.appendLine(`Starting Candid UI ...`);
-    
-    const command = `dfx deploy`;
-    const candidProcess = exec(command, { cwd: path.join(extensionPath, 'tools', 'ui') });
-
-    if (candidProcess.stdout) {
-        candidProcess.stdout.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-    }
-
-    if (candidProcess.stderr) {
-        candidProcess.stderr.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-    }
-
-    candidProcess.on('close', (code) => {
-        outputChannel.appendLine(`Candid UI process exited with code ${code}`);
-    });
-
+export function startCandid(terminal: vscode.Terminal, extensionPath: string, rootPath: string | undefined) {
+    const command = `cd "${extensionPath}/tools/ui" && dfx deploy && cd "${rootPath}"`;
+    terminal.show();
+    terminal.sendText(command);
 }
 
-export function startCandidAndOpenWebview(outputChannel: vscode.OutputChannel, extensionPath: string, candidUIWebviewProvider: CandidUIWebviewProvider, item: JsonTreeItem, panel: vscode.WebviewPanel) {
-    outputChannel.show(true);
-    outputChannel.appendLine(`Starting Candid UI ...`);
-    
-    const command = `dfx deploy`;
-    const candidProcess = exec(command, { cwd: path.join(extensionPath, 'tools', 'ui') });
-
-    if (candidProcess.stdout) {
-        candidProcess.stdout.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-    }
-
-    if (candidProcess.stderr) {
-        candidProcess.stderr.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-    }
-
-    candidProcess.on('close', (code) => {
-        outputChannel.appendLine(`Candid UI process exited with code ${code}`);
-        candidUIWebviewProvider.refresh();
-        candidUIWebviewProvider.updateWebviewHtml(item, panel);
-    });
+export function startCandidAndOpenWebview(terminal: vscode.Terminal, extensionPath: string, rootPath: string | undefined, candidUIWebviewProvider: CandidUIWebviewProvider, item: JsonTreeItem, panel: vscode.WebviewPanel) {
+    const command = `cd "${extensionPath}/tools/ui" && dfx deploy && cd "${rootPath}"`;
+    terminal.show();
+    terminal.sendText(command);
+    checkCandidProcessAndUpdatehWebviewForItem(extensionPath, candidUIWebviewProvider, item, panel, 0);
 }
 
-export function startCandidAndOpenWebviewSidebarForJsonTreeItem(outputChannel: vscode.OutputChannel, extensionPath: string, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider, item: JsonTreeItem) {
-    outputChannel.show(true);
-    outputChannel.appendLine(`Starting Candid UI ...`);
-    
-    const command = `dfx deploy`;
-    const candidProcess = exec(command, { cwd: path.join(extensionPath, 'tools', 'ui') });
-
-    if (candidProcess.stdout) {
-        candidProcess.stdout.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-    }
-
-    if (candidProcess.stderr) {
-        candidProcess.stderr.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
-    }
-
-    candidProcess.on('close', (code) => {
-        outputChannel.appendLine(`Candid UI process exited with code ${code}`);
-        candidUIWebviewSidebarProvider.refreshWebviewForJsonTreeItem(item);
-    });
+export function startCandidAndOpenWebviewSidebarForJsonTreeItem(terminal: vscode.Terminal, extensionPath: string, rootPath: string | undefined, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider, item: JsonTreeItem) {    
+    const command = `cd "${extensionPath}/tools/ui" && dfx deploy && cd "${rootPath}"`;
+    terminal.show();
+    terminal.sendText(command);
+    checkCandidProcessAndRefreshWebviewForItem(extensionPath, candidUIWebviewSidebarProvider, item, 0);
 }
 
-export function startCandidAndOpenWebviewSidebarForCanisterId(outputChannel: vscode.OutputChannel, extensionPath: string, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider, canisterId: string) {
-    outputChannel.show(true);
-    outputChannel.appendLine(`Starting Candid UI ...`);
-    
-    const command = `dfx deploy`;
-    const candidProcess = exec(command, { cwd: path.join(extensionPath, 'tools', 'ui') });
+export function startCandidAndOpenWebviewSidebarForCanisterId(terminal: vscode.Terminal, extensionPath: string, rootPath: string | undefined, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider, canisterId: string) {
+    const command = `cd "${extensionPath}/tools/ui" && dfx deploy && cd "${rootPath}"`;
+    terminal.show();
+    terminal.sendText(command);
+    checkCandidProcessAndRefreshWebviewForCanisterId(extensionPath, candidUIWebviewSidebarProvider, canisterId, 0);
+}
 
-    if (candidProcess.stdout) {
-        candidProcess.stdout.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
+async function checkCandidProcessAndUpdatehWebviewForItem(extensionPath: string, candidUIWebviewProvider: CandidUIWebviewProvider, item: JsonTreeItem, panel: vscode.WebviewPanel, iterator: number) {
+    if (iterator < 100) {
+        iterator++;
+        if (canisterStatusCheck(path.join(extensionPath, 'tools', 'ui'))) {
+            setTimeout(() => {
+                candidUIWebviewProvider.refresh();
+                candidUIWebviewProvider.updateWebviewHtml(item, panel);
+            }, 5000);
+        }
+        else {
+            setTimeout(() => {
+                checkCandidProcessAndUpdatehWebviewForItem(extensionPath, candidUIWebviewProvider, item, panel, iterator);
+            }, 5000);
+        }
     }
+}
 
-    if (candidProcess.stderr) {
-        candidProcess.stderr.on('data', (data) => {
-            outputChannel.appendLine(data.toString());
-        });
+async function checkCandidProcessAndRefreshWebviewForItem(extensionPath: string, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider, item: JsonTreeItem, iterator: number) {
+    if (iterator < 100) {
+        iterator++;
+        if (canisterStatusCheck(path.join(extensionPath, 'tools', 'ui'))) {
+            setTimeout(() => {
+                candidUIWebviewSidebarProvider.refreshWebviewForJsonTreeItem(item)
+            }, 5000);
+        }
+        else {
+            setTimeout(() => {
+                checkCandidProcessAndRefreshWebviewForItem(extensionPath, candidUIWebviewSidebarProvider, item, iterator);
+            }, 5000);
+        }
     }
+}
 
-    candidProcess.on('close', (code) => {
-        outputChannel.appendLine(`Candid UI process exited with code ${code}`);
-        candidUIWebviewSidebarProvider.refreshWebviewForCanisterId(canisterId);
-    });
+async function checkCandidProcessAndRefreshWebviewForCanisterId(extensionPath: string, candidUIWebviewSidebarProvider: CandidUIWebviewSidebarProvider, canisterId: string, iterator: number) {
+    if (iterator < 100) {
+        iterator++;
+        if (canisterStatusCheck(path.join(extensionPath, 'tools', 'ui'))) {
+            setTimeout(() => {
+                candidUIWebviewSidebarProvider.refreshWebviewForCanisterId(canisterId)
+            }, 5000);
+        }
+        else {
+            setTimeout(() => {
+                checkCandidProcessAndRefreshWebviewForCanisterId(extensionPath, candidUIWebviewSidebarProvider, canisterId, iterator);
+            }, 5000);
+        }
+    }
 }

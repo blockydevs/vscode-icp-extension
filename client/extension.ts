@@ -12,6 +12,7 @@ import { configureLanguageClient } from './modules/languageClient';
 import { setCanisterLogs } from './modules/globalVariables';
 import { CandidUIWebviewProvider } from './modules/candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './modules/candidUIWebviewSidebarProvider';
+import { TerminalProvider } from './modules/terminalProvider';
 
 let client: LanguageClient;
 
@@ -25,16 +26,14 @@ export function activate(context: vscode.ExtensionContext) {
     const candidProvider = new JsonTreeCandidProvider(rootPath);
     const candidUIWebviewProvider = new CandidUIWebviewProvider(rootPath, context.extensionPath, context.extensionUri);
     const candidUIWebviewSidebarProvider = new CandidUIWebviewSidebarProvider(context.extensionUri, rootPath, context.extensionPath);
+    const terminal = new TerminalProvider()
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
     vscode.window.registerTreeDataProvider('jsonTreeCandid', candidProvider);
-
-    const outputChannel = vscode.window.createOutputChannel("ICP logs");
-    context.subscriptions.push(outputChannel);
 
     // Set initial global variables
     setCanisterLogs({});
 
-    activateCommands(context, treeDataProvider, candidProvider, candidUIWebviewProvider, candidUIWebviewSidebarProvider, outputChannel);
+    activateCommands(context, treeDataProvider, candidProvider, candidUIWebviewProvider, candidUIWebviewSidebarProvider, terminal);
 }
 
 export function deactivate(): Thenable<void> | undefined {
