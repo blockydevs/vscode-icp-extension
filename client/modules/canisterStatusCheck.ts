@@ -12,7 +12,7 @@ export function canisterStatusCheck(path: string): boolean {
 
 export function canisterStatusCheckWithCanisterId(path: string, canisterId: string): boolean {
 	try {
-		const command = `dfx canister status ${canisterId} --all`;
+		const command = `dfx canister status ${canisterId} `;
 		execSync(command, { cwd: path });
 		return true;
 	} catch (err) {
