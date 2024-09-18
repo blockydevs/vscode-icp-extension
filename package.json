@@ -1,13 +1,20 @@
 {
   "name": "vscode-motoko",
+  "publisher": "Blockydevs",
   "version": "1.0.0",
-  "description": "VSCode extension with language server protocol for motoko",
+  "description": "Support for canister deployment and language support for dfx.json file",
   "engines": {
     "vscode": "^1.75.0"
   },
+  "displayName": "ICP support",
   "repository": {
     "type": "git",
     "url": "https://github.com/blockydevs/vscode-motoko.git"
+  },
+  "icon": "public/icon/icp-logo.png",
+  "galleryBanner": {
+    "color": "#000000",
+    "theme": "dark"
   },
   "dependencies": {
     "ajv": "^8.14.0",
@@ -17,14 +24,14 @@
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.11",
     "vscode-languageclient": "^9.0.1",
-		"json-to-ast": "^2.1.0",
-    "jsonc-parser": "^0.4.2"
+		"json-to-ast": "^2.1.0"
   },
   "keywords": [
     "vscode",
     "extension",
     "lsp",
-    "motoko"
+    "motoko",
+    "ICP"
   ],
   "author": "mmyslblocky",
   "license": "ISC",
@@ -32,17 +39,6 @@
     "url": "https://github.com/blockydevs/vscode-motoko/issues"
   },
   "homepage": "https://github.com/blockydevs/vscode-motoko#readme",
-  "activationEvents": [
-    "onLanguage:plaintext",
-    "onCommand:jsonTree.refreshEntry",
-    "onCommand:jsonTree.deployCanister",
-    "onCommand:jsonTree.startReplica",
-    "onCommand:jsonTree.deployCanisters",
-    "onCommand:jsonTree.openJson",
-    "onCommand:jsonTree.showCanisterGroupActions",
-    "onCommand:jsonTree.showCanisterActions",
-    "onView:calicoColors.colorsView"
-  ],
   "main": "./build/client/extension.js",
   "contributes": {
     "configuration": {
