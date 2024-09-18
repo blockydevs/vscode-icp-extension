@@ -93,15 +93,11 @@ The extension comes with several built-in commands to manage and interact with `
    - **Use Case**: When you have made changes to a specific canister and need to deploy it.
    - **Action**: Click on the canister in the tree view and select "Deploy Canister"
 
-2. **View Logs**:
-   - **Use Case**: View logs for specific canister.
-   - **Action**: Click on a canister and select "View Logs"
-
-3. **Open Candid UI**:
+2. **Open Candid UI**:
    - **Use Case**: Open Candid UI in webview.
    - **Action**: Click on a canister which has been deployed and select "Open Candid UI"
 
-4. **Open Candid UI in sidebar**:
+3. **Open Candid UI in sidebar**:
    - **Use Case**: Open Candid UI in webview in sidebar.
    - **Action**: Click on a canister which has been deployed and select "Open Candid UI in sidebar"
 

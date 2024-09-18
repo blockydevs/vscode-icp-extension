@@ -9,7 +9,6 @@ import { JsonTreeProvider } from './modules/jsonTreeProvider';
 import { JsonTreeCandidProvider } from './modules/jsonTreeCandidProvider';
 import { activateCommands } from './modules/commands';
 import { configureLanguageClient } from './modules/languageClient';
-import { setCanisterLogs } from './modules/globalVariables';
 import { CandidUIWebviewProvider } from './modules/candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './modules/candidUIWebviewSidebarProvider';
 import { TerminalProvider } from './modules/terminalProvider';
@@ -29,9 +28,6 @@ export function activate(context: vscode.ExtensionContext) {
     const terminal = new TerminalProvider()
     vscode.window.registerTreeDataProvider('jsonTree', treeDataProvider);
     vscode.window.registerTreeDataProvider('jsonTreeCandid', candidProvider);
-
-    // Set initial global variables
-    setCanisterLogs({});
 
     activateCommands(context, treeDataProvider, candidProvider, candidUIWebviewProvider, candidUIWebviewSidebarProvider, terminal);
 }

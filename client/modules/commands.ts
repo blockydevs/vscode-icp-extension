@@ -98,7 +98,7 @@ async function showCanisterGroupActions() {
 }
 
 async function showCanisterActions(item: JsonTreeItem) {
-    const options = ['Deploy Canister', 'View Logs', 'Open Candid UI', 'Open Candid UI in sidebar'];
+    const options = ['Deploy Canister', 'Open Candid UI', 'Open Candid UI in sidebar'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
