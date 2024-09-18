@@ -1,5 +1,5 @@
 {
-  "name": "vscode-motoko",
+  "name": "vscode-motoko-helper",
   "publisher": "BlockyDevs",
   "version": "1.0.0",
   "description": "Support for canister deployment and language support for dfx.json file",
