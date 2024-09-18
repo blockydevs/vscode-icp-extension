@@ -39,6 +39,7 @@
     "url": "https://github.com/blockydevs/vscode-motoko/issues"
   },
   "homepage": "https://github.com/blockydevs/vscode-motoko#readme",
+  "activationEvents": ["onStartupFinished"],
   "main": "./build/client/extension.js",
   "contributes": {
     "configuration": {
