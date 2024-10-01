@@ -1,4 +1,4 @@
-#  VSCODE MOTOKO
+#  VSCODE ICP Extension
 ## Overview
 
 This Visual Studio Code extension provides a specialized Language Server to help developers working with `dfx.json` files. The main features of this extension include:
