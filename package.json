@@ -101,6 +101,10 @@
         "title": "Deploy Canister"
       },
       {
+        "command": "jsonTree.deployCanisterOnNetwork",
+        "title": "Deploy Canister on network"
+      },
+      {
         "command": "jsonTree.startReplica",
         "title": "Start Replica"
       },

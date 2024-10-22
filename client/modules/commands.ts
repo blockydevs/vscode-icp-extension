@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as path from 'path';
 import { JsonTreeProvider, JsonTreeItem } from './jsonTreeProvider';
 import { JsonTreeCandidProvider } from './jsonTreeCandidProvider';
@@ -7,7 +8,7 @@ import { startCandid, startCandidAndOpenWebview, startCandidAndOpenWebviewSideba
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
 import { canisterStatusCheck } from './canisterStatusCheck';
-import { deployCanister, deployCanisters } from './canisterDeployManager';
+import { deployCanister, deployCanisterOnNetwork, deployCanisters } from './canisterDeployManager';
 import { TerminalProvider } from './terminalProvider';
 
 export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, jsonTreeCandidProvider: JsonTreeCandidProvider,
@@ -18,6 +19,9 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     vscode.commands.registerCommand('jsonTree.refreshEntry', () => treeDataProvider.refresh());
     vscode.commands.registerCommand('jsonTree.deployCanister', (item: JsonTreeItem) => {
         deployCanister(item.label.split(':')[0], terminalProvider.get(), jsonTreeCandidProvider);
+    });
+    vscode.commands.registerCommand('jsonTree.deployCanisterOnNetwork', (item: JsonTreeItem, selection: string) => {
+        deployCanisterOnNetwork(item.label.split(':')[0], selection, terminalProvider.get(), jsonTreeCandidProvider);
     });
     vscode.commands.registerCommand('jsonTree.startReplica', () => {
         startReplica(terminalProvider.get());
@@ -98,16 +102,49 @@ async function showCanisterGroupActions() {
 }
 
 async function showCanisterActions(item: JsonTreeItem) {
-    const options = ['Deploy Canister', 'Open Candid UI', 'Open Candid UI in sidebar'];
+    const options = ['Deploy Canister', 'Deploy Canister on network', 'Open Candid UI', 'Open Candid UI in sidebar'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
 
     if (selection === 'Deploy Canister') {
         vscode.commands.executeCommand('jsonTree.deployCanister', item);
+    } else if (selection === 'Deploy Canister on network') {
+        showCanisterDeploymentOnNetworkActions(item);
     } else if (selection === 'Open Candid UI') {
         vscode.commands.executeCommand('dfx.openCandidUI', item);
     } else if (selection === 'Open Candid UI in sidebar') {
         vscode.commands.executeCommand('dfx.openCandidUISidebar', item);
     }
+}
+
+async function showCanisterDeploymentOnNetworkActions(item: JsonTreeItem) {
+    const rootPath = vscode.workspace.rootPath;
+
+    const jsonFilePath = path.join(rootPath ?? '', 'dfx.json');
+
+    if (!fs.existsSync(jsonFilePath)) {
+        vscode.window.showErrorMessage('dfx.json not found.');
+        return;
+    }
+
+    const fileContent = fs.readFileSync(jsonFilePath, 'utf-8');
+    const jsonData = JSON.parse(fileContent);
+    const networkKeys = Object.keys(jsonData.networks);
+
+    if (!networkKeys.length) {
+        vscode.window.showErrorMessage('No networks configured in dfx.json.');
+        return;
+    }
+
+    const options = [...networkKeys];
+    const selection = await vscode.window.showQuickPick(options, {
+        placeHolder: 'Select a network to deploy to:'
+    });
+
+    if (!selection) {
+        return;
+    }
+
+    vscode.commands.executeCommand('jsonTree.deployCanisterOnNetwork', item, selection);
 }

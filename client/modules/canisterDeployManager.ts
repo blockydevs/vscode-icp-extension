@@ -2,8 +2,13 @@ import * as vscode from 'vscode';
 import { JsonTreeCandidProvider } from './jsonTreeCandidProvider';
 import { canisterStatusCheck, canisterStatusCheckWithCanisterId } from './canisterStatusCheck';
 
-export function deployCanister(canisterName: string, terminal: vscode.Terminal, jsonTreeCandidProvider: JsonTreeCandidProvider) {
-    const command = `dfx deploy ${canisterName}`;
+export function deployCanisterOnNetwork(canisterName: string, network: string, terminal: vscode.Terminal, jsonTreeCandidProvider: JsonTreeCandidProvider) {
+    const args = `--network=${network}`;
+    deployCanister(canisterName, terminal, jsonTreeCandidProvider, args);
+}
+
+export function deployCanister(canisterName: string, terminal: vscode.Terminal, jsonTreeCandidProvider: JsonTreeCandidProvider, args: string = '') {
+    const command = `dfx deploy ${canisterName} ${args}`;
     terminal.show();
     terminal.sendText(command);
 	const rootPath = vscode.workspace.rootPath;
