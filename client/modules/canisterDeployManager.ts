@@ -17,8 +17,13 @@ export function deployCanister(canisterName: string, terminal: vscode.Terminal, 
 	}
 }
 
-export function deployCanisters(terminal: vscode.Terminal, jsonTreeCandidProvider: JsonTreeCandidProvider) {
-    const command = `dfx deploy`;
+export function deployCanistersOnNetwork(network: string, terminal: vscode.Terminal, jsonTreeCandidProvider: JsonTreeCandidProvider) {
+    const args = `--network=${network}`;
+    deployCanisters(terminal, jsonTreeCandidProvider, args);
+}
+
+export function deployCanisters(terminal: vscode.Terminal, jsonTreeCandidProvider: JsonTreeCandidProvider, args: string = '') {
+    const command = `dfx deploy ${args}`;
     terminal.show();
     terminal.sendText(command);
 	const rootPath = vscode.workspace.rootPath;

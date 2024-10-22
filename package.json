@@ -113,6 +113,10 @@
         "title": "Deploy Canisters"
       },
       {
+        "command": "jsonTree.deployCanistersOnNetwork",
+        "title": "Deploy Canisters"
+      },
+      {
         "command": "jsonTree.openJson",
         "title": "Open JSON"
       },

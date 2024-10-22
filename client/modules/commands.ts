@@ -8,7 +8,7 @@ import { startCandid, startCandidAndOpenWebview, startCandidAndOpenWebviewSideba
 import { CandidUIWebviewProvider } from './candidUIWebviewProvider';
 import { CandidUIWebviewSidebarProvider } from './candidUIWebviewSidebarProvider';
 import { canisterStatusCheck } from './canisterStatusCheck';
-import { deployCanister, deployCanisterOnNetwork, deployCanisters } from './canisterDeployManager';
+import { deployCanister, deployCanisterOnNetwork, deployCanisters, deployCanistersOnNetwork } from './canisterDeployManager';
 import { TerminalProvider } from './terminalProvider';
 
 export function activateCommands(context: vscode.ExtensionContext, treeDataProvider: JsonTreeProvider, jsonTreeCandidProvider: JsonTreeCandidProvider,
@@ -28,6 +28,9 @@ export function activateCommands(context: vscode.ExtensionContext, treeDataProvi
     });
     vscode.commands.registerCommand('jsonTree.deployCanisters', () => {
         deployCanisters(terminalProvider.get(), jsonTreeCandidProvider);
+    });
+    vscode.commands.registerCommand('jsonTree.deployCanistersOnNetwork', (network: string) => {
+        deployCanistersOnNetwork(network, terminalProvider.get(), jsonTreeCandidProvider);
     });
     vscode.commands.registerCommand('jsonTree.openJson', openJson);
     vscode.commands.registerCommand('jsonTree.showCanisterGroupActions', showCanisterGroupActions);
@@ -87,7 +90,7 @@ function openJson(filePath: string, keyPath: string, value: any) {
 }
 
 async function showCanisterGroupActions() {
-    const options = ['Start Replica', 'Deploy Canisters', 'Deploy Candid'];
+    const options = ['Start Replica', 'Deploy Canisters', 'Deploy Canisters on network', 'Deploy Candid'];
     const selection = await vscode.window.showQuickPick(options, {
         placeHolder: 'Select an action'
     });
@@ -96,6 +99,8 @@ async function showCanisterGroupActions() {
         vscode.commands.executeCommand('jsonTree.startReplica');
     } else if (selection === 'Deploy Canisters') {
         vscode.commands.executeCommand('jsonTree.deployCanisters');
+    } else if (selection === 'Deploy Canisters on network') {
+        showCanistersDeploymentOnNetworkActions();
     } else if (selection === 'Deploy Candid') {
         vscode.commands.executeCommand('dfx.startCandid');
     }
@@ -118,14 +123,14 @@ async function showCanisterActions(item: JsonTreeItem) {
     }
 }
 
-async function showCanisterDeploymentOnNetworkActions(item: JsonTreeItem) {
+async function displayNetworkOptions() {
     const rootPath = vscode.workspace.rootPath;
 
     const jsonFilePath = path.join(rootPath ?? '', 'dfx.json');
 
     if (!fs.existsSync(jsonFilePath)) {
         vscode.window.showErrorMessage('dfx.json not found.');
-        return;
+        return undefined;
     }
 
     const fileContent = fs.readFileSync(jsonFilePath, 'utf-8');
@@ -134,7 +139,7 @@ async function showCanisterDeploymentOnNetworkActions(item: JsonTreeItem) {
 
     if (!networkKeys.length) {
         vscode.window.showErrorMessage('No networks configured in dfx.json.');
-        return;
+        return undefined;
     }
 
     const options = [...networkKeys];
@@ -142,9 +147,25 @@ async function showCanisterDeploymentOnNetworkActions(item: JsonTreeItem) {
         placeHolder: 'Select a network to deploy to:'
     });
 
-    if (!selection) {
+    return selection;
+}
+
+async function showCanisterDeploymentOnNetworkActions(item: JsonTreeItem) {
+    const network = await displayNetworkOptions();
+
+    if (!network) {
         return;
     }
 
-    vscode.commands.executeCommand('jsonTree.deployCanisterOnNetwork', item, selection);
+    vscode.commands.executeCommand('jsonTree.deployCanisterOnNetwork', item, network);
+}
+
+async function showCanistersDeploymentOnNetworkActions() {
+    const network = await displayNetworkOptions();
+
+    if (!network) {
+        return;
+    }
+
+    vscode.commands.executeCommand('jsonTree.deployCanistersOnNetwork', network);
 }
