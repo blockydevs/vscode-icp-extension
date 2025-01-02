@@ -10,7 +10,6 @@ These features are powered by a schema located in `/server/dfx.json`.
 
 - **Canisters View**: A visual representation of the `dfx.json` file in a tree format, allowing easy navigation and interaction with canisters. The extension is activated from the side panel of Visual Studio Code.
 - **Canister Actions**: For each canister, you can perform various actions such as deploying the canister. You can also perform actions on all canisters collectively.
-
 ![Autocomplete and validation](public/readme/autocomplete_validation.gif)
 
 ## Requirements
@@ -23,7 +22,7 @@ The extension comes with several built-in commands to manage and interact with `
 
 **Refresh**: When you have made changes to the `dfx.json` file outside of VS Code or through other processes and want to ensure the tree view is up-to-date.
 
-`Canisters: Show Actions`:
+### Canisters: Show Actions:
 
 1. **Start the Replica**:
    - **Use Case**: When you need to start the local Internet Computer (IC) replica to test your canisters.
@@ -40,7 +39,7 @@ The extension comes with several built-in commands to manage and interact with `
    - **Action**: Select "Deploy Candid" from the options menu to deploy Candid UI canister.
    ![Deploy Candid](public/readme/deploy_candid.gif)
 
-`Show Canister Actions`:
+### Show Canister Actions:
 
 1. **Deploy a Canister**:
    - **Use Case**: When you have made changes to a specific canister and need to deploy it.
@@ -57,7 +56,7 @@ The extension comes with several built-in commands to manage and interact with `
    - **Action**: Click on a canister which has been deployed and select "Open Candid UI in sidebar"
    ![Open Candid UI in sidebar](public/readme/open_candid_sidebar.gif)
 
-`Deployed canisters`:
+### Deployed canisters:
 
 This is a menu view which shows deployed canisters and by selecting one of it you can open Candid UI with selected deployed canister in sidebar.
 ![Sidebar](public/readme/sidebar.gif)
